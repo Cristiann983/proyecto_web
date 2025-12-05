@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('rol_permiso', function (Blueprint $table) {
+            $table->id('Id');
+            $table->unsignedBigInteger('Id_Rol');
+            $table->unsignedBigInteger('Id_Permiso');
+            $table->timestamps();
+            
+            // Foreign keys
+            $table->foreign('Id_Rol')->references('Id')->on('rol')->onDelete('cascade');
+            $table->foreign('Id_Permiso')->references('Id')->on('permiso')->onDelete('cascade');
+            
+            $table->unique(['Id_Rol', 'Id_Permiso']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('rol_permiso');
+    }
+};
