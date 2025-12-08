@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Evento;
 use App\Models\Juez;
+use App\Models\Criterio;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -45,21 +46,26 @@ class AdminEventoController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string',
+            'dificultad' => 'nullable|string|max:100',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
             'ubicacion' => 'nullable|string|max:255',
             'estado' => 'nullable|in:Activo,Finalizado,Cancelado',
             'jueces' => 'nullable|array',
-            'jueces.*' => 'exists:juez,Id'
+            'jueces.*' => 'exists:juez,Id',
+            'criterios' => 'nullable|array',
+            'criterios.*.nombre' => 'required_with:criterios|string|max:255',
+            'criterios.*.descripcion' => 'nullable|string|max:500',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // Crear evento sin Id_juez
+            // Crear evento
             $evento = Evento::create([
                 'Nombre' => $request->nombre,
                 'Descripcion' => $request->descripcion,
+                'Categoria' => $request->dificultad,
                 'Fecha_inicio' => $request->fecha_inicio,
                 'Fecha_fin' => $request->fecha_fin,
                 'Ubicacion' => $request->ubicacion,
@@ -75,6 +81,19 @@ class AdminEventoController extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+                }
+            }
+
+            // Crear criterios para el evento
+            if ($request->has('criterios') && is_array($request->criterios)) {
+                foreach ($request->criterios as $criterioData) {
+                    if (!empty($criterioData['nombre'])) {
+                        Criterio::create([
+                            'Nombre' => $criterioData['nombre'],
+                            'Descripcion' => $criterioData['descripcion'] ?? '',
+                            'Evento_id' => $evento->Id,
+                        ]);
+                    }
                 }
             }
 
@@ -117,7 +136,7 @@ class AdminEventoController extends Controller
                 ->with('error', 'No tienes permisos para acceder a esta sección.');
         }
 
-        $evento = Evento::findOrFail($id);
+        $evento = Evento::with('criterios')->findOrFail($id);
         $jueces = Juez::all();
         
         $juecesAsignados = DB::table('evento_juez')

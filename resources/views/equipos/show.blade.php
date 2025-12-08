@@ -145,10 +145,14 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    @if($loop->first)
+                                    @if(isset($participante->perfil) && $participante->perfil->Nombre === 'Líder')
                                         <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full flex items-center gap-1">
                                             <span>👑</span>
-                                            <span>Líder</span>
+                                            <span>{{ $participante->perfil->Nombre }}</span>
+                                        </span>
+                                    @elseif(isset($participante->perfil))
+                                        <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-full">
+                                            {{ $participante->perfil->Nombre }}
                                         </span>
                                     @else
                                         <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-full">

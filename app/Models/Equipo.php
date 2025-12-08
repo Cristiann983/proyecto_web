@@ -34,4 +34,10 @@ class Equipo extends Model
     {
         return $this->hasOne(Proyecto::class, 'Equipo_id', 'Id');
     }
+
+    // Relación con solicitudes de unión al equipo
+    public function solicitudes()
+    {
+        return $this->hasMany(SolicitudEquipo::class, 'Equipo_id', 'Id');
+    }
 }

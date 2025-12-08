@@ -71,7 +71,7 @@ class EventoController extends Controller
             END
         ")
         ->orderBy('Fecha_inicio', 'asc')
-        ->get();
+        ->paginate(6);
 
         // Obtener categorías únicas para el filtro
         $categorias = Evento::select('Categoria')->distinct()->pluck('Categoria');
@@ -90,16 +90,14 @@ class EventoController extends Controller
         foreach ($eventos as $evento) {
             $evento->estaInscrito = in_array($evento->Id, $eventosInscritos);
 
-            // Clasificar estado del evento
-            $fechaInicio = \Carbon\Carbon::parse($evento->Fecha_inicio);
-            $fechaFin = \Carbon\Carbon::parse($evento->Fecha_fin);
-
-            if ($fechaInicio->isFuture()) {
-                $evento->estadoEvento = 'proximo';
-            } elseif ($fechaFin->isPast()) {
+            // Clasificar estado del evento dinámicamente
+            $ahora = now();
+            if ($ahora > $evento->Fecha_fin) {
                 $evento->estadoEvento = 'finalizado';
-            } else {
+            } elseif ($ahora >= $evento->Fecha_inicio && $ahora <= $evento->Fecha_fin) {
                 $evento->estadoEvento = 'activo';
+            } else {
+                $evento->estadoEvento = 'proximo';
             }
         }
 
@@ -110,6 +108,16 @@ class EventoController extends Controller
     {
         $evento = Evento::with('jueces')->findOrFail($id);
         $user = Auth::user();
+        
+        // Determinar estado dinámicamente basado en fechas
+        $ahora = now();
+        if ($ahora > $evento->Fecha_fin) {
+            $evento->estado = 'finalizado';
+        } elseif ($ahora >= $evento->Fecha_inicio && $ahora <= $evento->Fecha_fin) {
+            $evento->estado = 'activo';
+        } else {
+            $evento->estado = 'proximo';
+        }
         
         $participante = Participante::where('user_id', $user->id)->first();
         
@@ -164,6 +172,15 @@ class EventoController extends Controller
 
     public function inscribirse(Request $request, $id)
     {
+        // Verificar que el evento no haya finalizado
+        $evento = Evento::findOrFail($id);
+        $ahora = now();
+        
+        if ($ahora > $evento->Fecha_fin) {
+            return redirect()->back()
+                ->with('error', 'No puedes inscribirse. Este evento ya ha finalizado.');
+        }
+        
         // Validar datos del formulario
         $validated = $request->validate([
             'equipo_id' => 'required|exists:equipo,Id',

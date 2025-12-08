@@ -58,27 +58,42 @@ class Evento extends Model
         return $this->hasMany(Criterio::class, 'Evento_id', 'Id');
     }
 
-    // ✅ Agregar método estadoLabel
+    // ✅ Determinar estado dinámicamente basado en fechas
     public function getEstadoLabelAttribute()
     {
-        $estados = [
-            'Activo' => [
-                'clase' => 'bg-green-100 text-green-800',
-                'texto' => 'Activo'
-            ],
-            'Finalizado' => [
-                'clase' => 'bg-gray-100 text-gray-800',
-                'texto' => 'Finalizado'
-            ],
-            'Cancelado' => [
-                'clase' => 'bg-red-100 text-red-800',
-                'texto' => 'Cancelado'
-            ],
-        ];
+        $ahora = now();
+        $fechaInicio = $this->Fecha_inicio;
+        $fechaFin = $this->Fecha_fin;
+        
+        // Si el evento ya finalizó
+        if ($ahora > $fechaFin) {
+            $estado = 'Finalizado';
+            $clase = 'bg-gray-100 text-gray-800';
+            $texto = 'Finalizado';
+        }
+        // Si el evento está en curso
+        elseif ($ahora >= $fechaInicio && $ahora <= $fechaFin) {
+            $estado = 'Activo';
+            $clase = 'bg-green-100 text-green-800';
+            $texto = 'En curso';
+        }
+        // Si el evento aún no comienza
+        else {
+            $estado = 'Próximo';
+            $clase = 'bg-blue-100 text-blue-800';
+            $texto = 'Próximo';
+        }
+        
+        // Si está cancelado, sobrescribir
+        if ($this->Estado === 'Cancelado') {
+            $clase = 'bg-red-100 text-red-800';
+            $texto = 'Cancelado';
+        }
 
-        return $estados[$this->Estado] ?? [
-            'clase' => 'bg-gray-100 text-gray-800',
-            'texto' => $this->Estado
+        return [
+            'clase' => $clase,
+            'texto' => $texto,
+            'estado' => $estado
         ];
     }
 }

@@ -46,7 +46,7 @@ class UsuarioSeeder extends Seeder
                 'user_id' => $juez->id,
                 'Id_Rol' => $roleJuez->Id,
                 'created_at' => now(),
-                'updated_at' => now(),
+                'updated_at' => now(),  
             ]);
 
             DB::table('juez')->insert([

@@ -11,7 +11,9 @@ class Criterio extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'descripcion',
+        'Nombre',
+        'Descripcion',
+        'Evento_id',
     ];
 
     public function evento()

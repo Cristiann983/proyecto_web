@@ -10,8 +10,10 @@ use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\JuezController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\CalificacionController;
+use App\Http\Controllers\RepositorioController;
 use App\Http\Controllers\InvitacionController;
 use App\Http\Controllers\AdminJuezController;
+use App\Http\Controllers\SolicitudEquipoController;
 
 // Rutas públicas
 Route::get('/', function () {
@@ -46,15 +48,23 @@ Route::middleware(['role:Participante'])->group(function () {
     Route::get('/eventos/{id}/inscripcion', [EventoController::class, 'inscripcion'])->name('eventos.inscripcion');
     Route::post('/eventos/{id}/inscribir', [EventoController::class, 'inscribirse'])->name('eventos.inscribirse');
 
-    Route::get('/codigos', function () {
-        return view('codigos.index');
-    })->name('codigos.index');
+    Route::get('/codigos', [RepositorioController::class, 'index'])->name('codigos.index');
+    Route::post('/repositorios', [RepositorioController::class, 'store'])->name('repositorios.store');
+    Route::delete('/repositorios/{id}', [RepositorioController::class, 'destroy'])->name('repositorios.destroy');
 
     // Rutas de Invitaciones
     Route::get('/invitaciones', [InvitacionController::class, 'index'])->name('invitaciones.index');
     Route::post('/invitaciones/{id}/aceptar', [InvitacionController::class, 'aceptar'])->name('invitaciones.aceptar');
     Route::post('/invitaciones/{id}/rechazar', [InvitacionController::class, 'rechazar'])->name('invitaciones.rechazar');
     Route::delete('/invitaciones/{id}/cancelar', [InvitacionController::class, 'cancelar'])->name('invitaciones.cancelar');
+
+    // Rutas de Solicitudes para unirse a equipos
+    Route::post('/equipos/{id}/solicitar', [SolicitudEquipoController::class, 'store'])->name('solicitudes.store');
+    Route::get('/mis-solicitudes', [SolicitudEquipoController::class, 'misSolicitudes'])->name('solicitudes.mis-solicitudes');
+    Route::get('/mi-estado-solicitudes', [SolicitudEquipoController::class, 'miEstado'])->name('solicitudes.mi-estado');
+    Route::get('/buscar-equipos', [SolicitudEquipoController::class, 'buscarEquipos'])->name('solicitudes.buscar-equipos');
+    Route::post('/solicitudes/{id}/aceptar', [SolicitudEquipoController::class, 'aceptar'])->name('solicitudes.aceptar');
+    Route::post('/solicitudes/{id}/rechazar', [SolicitudEquipoController::class, 'rechazar'])->name('solicitudes.rechazar');
 });
 
 // Rutas ADMIN (prefix 'admin')

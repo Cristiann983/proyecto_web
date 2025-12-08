@@ -98,6 +98,16 @@
                 <span>✉️</span>
                 <span>Invitaciones</span>
             </a>
+            <a href="{{ route('solicitudes.buscar-equipos') }}"
+               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
+                <span>🔍</span>
+                <span>Explorar</span>
+            </a>
+            <a href="{{ route('solicitudes.mi-estado') }}"
+               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
+                <span>📋</span>
+                <span>Mis Solicitudes</span>
+            </a>
         </div>
 
         <!-- Sección de equipos con botón crear -->
@@ -170,10 +180,14 @@
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-600">👤</span>
                                     <span class="text-sm text-gray-700">{{ $participante->Nombre }}</span>
-                                    @if($loop->first)
+                                    @if(isset($participante->perfil) && $participante->perfil->Nombre === 'Líder')
                                         <span class="ml-auto px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full flex items-center gap-1">
                                             <span>👑</span>
-                                            <span>Líder</span>
+                                            <span>{{ $participante->perfil->Nombre }}</span>
+                                        </span>
+                                    @elseif(isset($participante->perfil))
+                                        <span class="ml-auto px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                                            {{ $participante->perfil->Nombre }}
                                         </span>
                                     @endif
                                 </div>

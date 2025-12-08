@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('criterio', function (Blueprint $table) {
             $table->id('Id');
-            $table->string('descripcion', 255);
+            $table->string('Nombre', 255);
+            $table->string('Descripcion', 500)->nullable();
         });
     }
 

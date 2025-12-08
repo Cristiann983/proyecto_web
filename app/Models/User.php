@@ -81,4 +81,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Juez::class, 'user_id');
     }
+
+    // Relación con solicitudes de unión a equipos
+    public function solicitudesEquipo()
+    {
+        return $this->hasMany(SolicitudEquipo::class, 'Usuario_id', 'id');
+    }
 }

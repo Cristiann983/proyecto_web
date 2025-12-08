@@ -35,6 +35,21 @@ class EquipoController extends Controller
         ])
         ->get();
 
+        // Cargar perfil para cada participante en cada equipo
+        foreach ($equipos as $equipo) {
+            foreach ($equipo->participantes as $participanteEquipo) {
+                $relacionEquipo = DB::table('participante_equipo')
+                    ->where('Id_equipo', $equipo->Id)
+                    ->where('Id_participante', $participanteEquipo->Id)
+                    ->first();
+                
+                if ($relacionEquipo) {
+                    $perfil = Perfil::find($relacionEquipo->Id_perfil);
+                    $participanteEquipo->perfil = $perfil;
+                }
+            }
+        }
+
         // Obtener todos los perfiles para el formulario de invitación
         $perfiles = Perfil::all();
 
@@ -132,6 +147,19 @@ class EquipoController extends Controller
 
         // Obtener todos los perfiles disponibles para el formulario de invitación
         $perfiles = Perfil::all();
+
+        // Cargar perfil para cada participante desde la tabla pivote
+        foreach ($equipo->participantes as $participante) {
+            $participanteEquipo = DB::table('participante_equipo')
+                ->where('Id_equipo', $equipo->Id)
+                ->where('Id_participante', $participante->Id)
+                ->first();
+            
+            if ($participanteEquipo) {
+                $perfil = Perfil::find($participanteEquipo->Id_perfil);
+                $participante->perfil = $perfil;
+            }
+        }
 
         return view('equipos.show', compact('equipo', 'esMiembro', 'esLider', 'perfiles'));
     }

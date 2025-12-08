@@ -194,6 +194,17 @@
                     </button>
                 </div>
             </div>
+
+            @if ($errors->any())
+                <div class="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="font-semibold text-red-800 mb-2">❌ Por favor corrige los siguientes errores:</p>
+                    <ul class="list-disc list-inside text-sm text-red-600">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             
             <form method="POST" action="{{ route('admin.eventos.store') }}" class="p-6 space-y-4">
                 @csrf
@@ -222,6 +233,29 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Número máximo de equipos</label>
+                        <input 
+                            type="number" 
+                            name="max_equipos"
+                            value="100"
+                            min="1"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nivel de dificultad</label>
+                        <select name="dificultad" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="Principiante">Principiante</option>
+                            <option value="Intermedio" selected>Intermedio</option>
+                            <option value="Avanzado">Avanzado</option>
+                            <option value="Experto">Experto</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de inicio *</label>
                         <input 
                             type="date" 
@@ -242,16 +276,96 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Juez asignado</label>
-                    <select 
-                        name="id_juez"
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hora de inicio</label>
+                    <input 
+                        type="time" 
+                        name="hora_inicio"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     >
-                        <option value="">Sin juez asignado</option>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
+                    <input 
+                        type="text" 
+                        name="ubicacion"
+                        placeholder="Ej: Virtual, Bogotá, etc."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tecnologías requeridas</label>
+                    <select 
+                        name="tecnologias[]"
+                        multiple 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        size="4"
+                    >
+                        <option value="React">React</option>
+                        <option value="Vue.js">Vue.js</option>
+                        <option value="Angular">Angular</option>
+                        <option value="Node.js">Node.js</option>
+                        <option value="Python">Python</option>
+                        <option value="Java">Java</option>
+                        <option value="Solidity">Solidity</option>
+                        <option value="Web3.js">Web3.js</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado del evento</label>
+                    <select name="estado" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="Activo" selected>Activo</option>
+                        <option value="Finalizado">Finalizado</option>
+                        <option value="Cancelado">Cancelado</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jueces asignados</label>
+                    <select 
+                        name="jueces[]"
+                        multiple
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        size="3"
+                    >
                         @foreach ($jueces as $juez)
-                            <option value="{{ $juez->Id }}">{{ $juez->Nombre }}</option>
+                            <option value="{{ $juez->Id }}">{{ $juez->user->name ?? $juez->Nombre }}</option>
                         @endforeach
                     </select>
+                    <p class="text-xs text-gray-500 mt-2">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Criterios de Evaluación</label>
+                    <div id="criterios-container" class="space-y-3 mb-3">
+                        <div class="criterio-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex gap-2 mb-2">
+                                <input 
+                                    type="text" 
+                                    name="criterios[0][nombre]"
+                                    placeholder="Nombre del criterio"
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                >
+                                <button type="button" onclick="removerCriterio(this)" class="text-red-600 hover:text-red-700 px-2 py-2">🗑️</button>
+                            </div>
+                            <textarea 
+                                name="criterios[0][descripcion]"
+                                placeholder="Descripción (opcional)"
+                                rows="2"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <button 
+                        type="button"
+                        onclick="agregarCriterio()"
+                        class="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                    >
+                        + Agregar otro criterio
+                    </button>
                 </div>
 
                 <div class="flex gap-3 pt-4">
@@ -274,11 +388,57 @@
     </div>
 
     <script>
+        // Mantener el modal abierto si hay errores de validación
+        @if ($errors->any())
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('modalCrearEvento').classList.remove('hidden');
+            });
+        @endif
+
         document.getElementById('modalCrearEvento').addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.add('hidden');
             }
         });
+
+        let criterioCount = 1;
+
+        function agregarCriterio() {
+            const container = document.getElementById('criterios-container');
+            const nuevoItem = document.createElement('div');
+            nuevoItem.className = 'criterio-item bg-gray-50 p-4 rounded-lg border border-gray-200';
+            nuevoItem.innerHTML = `
+                <div class="flex gap-2 mb-2">
+                    <input 
+                        type="text" 
+                        name="criterios[${criterioCount}][nombre]"
+                        placeholder="Nombre del criterio"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                    <button type="button" onclick="removerCriterio(this)" class="text-red-600 hover:text-red-700 px-2 py-2">🗑️</button>
+                </div>
+                <textarea 
+                    name="criterios[${criterioCount}][descripcion]"
+                    placeholder="Descripción (opcional)"
+                    rows="2"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                ></textarea>
+            `;
+            container.appendChild(nuevoItem);
+            criterioCount++;
+        }
+
+        function removerCriterio(button) {
+            const container = document.getElementById('criterios-container');
+            const items = container.querySelectorAll('.criterio-item');
+            
+            // No permitir eliminar si solo hay un criterio
+            if (items.length > 1) {
+                button.closest('.criterio-item').remove();
+            } else {
+                alert('Debes tener al menos un criterio');
+            }
+        }
     </script>
 </body>
 </html>

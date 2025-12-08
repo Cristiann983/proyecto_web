@@ -89,6 +89,108 @@
             </div>
         @endif
 
+        <!-- Separador de Mis Eventos Inscritos -->
+        @php
+            $eventosInscritos = $eventos->filter(fn($e) => $e->estaInscrito);
+        @endphp
+
+        @if($eventosInscritos->count() > 0)
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-1 w-1 bg-purple-600 rounded-full"></div>
+                    <h2 class="text-2xl font-bold text-gray-900">✨ Mis Eventos Inscritos</h2>
+                    <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold">{{ $eventosInscritos->count() }}</span>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    @foreach($eventosInscritos as $evento)
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 relative border-2 border-purple-200">
+
+                            {{-- Badge de estado --}}
+                            <div class="absolute top-4 left-4 z-10">
+                                @if($evento->estadoEvento == 'activo')
+                                    <span class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                        🟢 En Curso
+                                    </span>
+                                @elseif($evento->estadoEvento == 'proximo')
+                                    <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                        🔵 Próximo
+                                    </span>
+                                @else
+                                    <span class="bg-gray-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                        ⚫ Finalizado
+                                    </span>
+                                @endif
+                            </div>
+
+                            {{-- Badge de inscrito --}}
+                            <div class="absolute top-4 right-4 z-10">
+                                <span class="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                    ✓ Inscrito
+                                </span>
+                            </div>
+
+                            <!-- Header con gradiente -->
+                            <div class="bg-gradient-to-r from-purple-600 to-blue-500 p-6 text-white">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
+                                        &lt;/&gt; {{ strtolower($evento->Categoria) }}
+                                    </span>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">{{ $evento->Nombre }}</h3>
+                                <p class="text-sm opacity-90 line-clamp-2">{{ $evento->Descripcion }}</p>
+                            </div>
+
+                            <!-- Contenido -->
+                            <div class="p-6">
+                                <!-- Fechas -->
+                                <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                    <span>📅</span>
+                                    <span>
+                                        {{ \Carbon\Carbon::parse($evento->Fecha_inicio)->format('d M') }} -
+                                        {{ \Carbon\Carbon::parse($evento->Fecha_fin)->format('d M Y') }}
+                                    </span>
+                                </div>
+
+                                <!-- Duración -->
+                                @php
+                                    $inicio = \Carbon\Carbon::parse($evento->Fecha_inicio);
+                                    $fin = \Carbon\Carbon::parse($evento->Fecha_fin);
+                                    $duracionDias = $inicio->diffInDays($fin) + 1;
+                                @endphp
+                                <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                                    <span>⏱️</span>
+                                    <span>{{ $duracionDias }} día{{ $duracionDias != 1 ? 's' : '' }}</span>
+                                </div>
+
+                                <!-- Información de tiempo restante/transcurrido -->
+                                @if($evento->estadoEvento == 'activo')
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                                        <p class="text-xs text-green-700 font-medium">
+                                            ⏰ Termina {{ $fin->diffForHumans() }}
+                                        </p>
+                                    </div>
+                                @elseif($evento->estadoEvento == 'proximo')
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                        <p class="text-xs text-blue-700 font-medium">
+                                            🚀 Comienza {{ $inicio->diffForHumans() }}
+                                        </p>
+                                    </div>
+                                @endif
+
+                                <!-- Botón de acción -->
+                                <a href="{{ route('eventos.show', $evento->Id) }}"
+                                   class="block w-full text-center py-3
+                                          {{ $evento->estadoEvento == 'finalizado' ? 'bg-gray-200 text-gray-600' : 'bg-purple-600 hover:bg-purple-700 text-white' }}
+                                          rounded-lg font-medium transition-colors">
+                                    Ver Detalles →
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <!-- Barra de filtros y búsqueda -->
         <form method="GET" action="{{ route('eventos.index') }}" class="mb-6">
             <div class="bg-white rounded-lg border border-gray-200 p-4">
@@ -145,6 +247,12 @@
                 </div>
             </div>
         </form>
+
+        <!-- Sección de Todos los Eventos -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Explora Todos los Eventos</h2>
+            <p class="text-gray-600">Descubre y participa en nuevos retos</p>
+        </div>
 
         <!-- Grid de eventos -->
         @if($eventos->count() > 0)
@@ -236,6 +344,11 @@
                         </div>
                     </div>
                 @endforeach
+            </div>
+
+            <!-- Paginación -->
+            <div class="mt-8 flex justify-center">
+                {{ $eventos->links('pagination::tailwind') }}
             </div>
         @else
             <!-- Estado vacío -->

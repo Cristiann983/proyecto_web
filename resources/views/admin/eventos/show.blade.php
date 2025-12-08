@@ -161,12 +161,6 @@
 
                 <!-- Botones de acción -->
                 <div class="flex gap-3 pt-6 border-t border-gray-200">
-                    <a href="{{ route('admin.eventos.edit', 1) }}" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium transition text-center">
-                        Editar evento
-                    </a>
-                    <a href="{{ route('admin.equipos.index') }}" class="flex-1 bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-lg font-medium transition text-center">
-                        Ver equipos inscritos
-                    </a>
                 </div>
             </div>
         </div>

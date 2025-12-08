@@ -10,7 +10,7 @@ use App\Models\Criterio;
 
 class JuezController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -28,10 +28,25 @@ class JuezController extends Controller
                 ->with(['equipos.participantes.usuario', 'equipos.proyecto'])
                 ->get() : collect();
 
-            // Obtener criterios de evaluación
-            $criterios = Criterio::all();
+            // Si se selecciona un evento específico, paginar sus equipos
+            $eventoSeleccionado = null;
+            $equiposPaginados = null;
+            $criterios = collect(); // Criterios vacíos por defecto
+            
+            if ($request->has('evento_id') && !empty($request->evento_id)) {
+                $eventoSeleccionado = Evento::with(['equipos.participantes.usuario', 'equipos.proyectos.calificaciones.juez', 'criterios'])->find($request->evento_id);
+                
+                if ($eventoSeleccionado) {
+                    // Paginar equipos (6 por página)
+                    $equipos = $eventoSeleccionado->equipos()->with(['participantes.usuario', 'proyectos.calificaciones.juez'])->paginate(6);
+                    $equiposPaginados = $equipos;
+                    
+                    // Obtener criterios específicos del evento
+                    $criterios = $eventoSeleccionado->criterios;
+                }
+            }
 
-            return view('admin.jueces.index', compact('juez', 'isAdmin', 'eventosAsignados', 'criterios'));
+            return view('admin.jueces.index', compact('juez', 'isAdmin', 'eventosAsignados', 'criterios', 'eventoSeleccionado', 'equiposPaginados'));
         }
 
         return redirect()->route('dashboard')

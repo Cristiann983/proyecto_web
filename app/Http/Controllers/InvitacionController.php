@@ -7,28 +7,50 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Invitacion;
 use App\Models\Participante;
+use App\Models\SolicitudEquipo;
+use App\Models\Perfil;
 
 class InvitacionController extends Controller
 {
     /**
-     * Mostrar todas las invitaciones del usuario
+     * Mostrar todas las invitaciones y solicitudes del usuario
      */
     public function index()
     {
         $user = Auth::user();
         $participante = Participante::where('user_id', $user->id)->first();
 
-        if (!$participante) {
-            return view('invitaciones.index', ['invitaciones' => collect()]);
+        // Invitaciones recibidas (para participantes)
+        $invitaciones = collect();
+        if ($participante) {
+            $invitaciones = Invitacion::where('Participante_id', $participante->Id)
+                ->with(['equipo', 'perfil', 'invitadoPor', 'invitadoPor.usuario'])
+                ->orderBy('created_at', 'desc')
+                ->get();
         }
 
-        // Obtener invitaciones del participante con todas las relaciones
-        $invitaciones = Invitacion::where('Participante_id', $participante->Id)
-            ->with(['equipo', 'perfil', 'invitadoPor', 'invitadoPor.usuario'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Solicitudes recibidas (para líderes)
+        $solicitudes = collect();
+        $equiposLiderados = collect();
+        
+        if ($participante) {
+            $perfilLider = Perfil::where('Nombre', 'Líder')->first();
+            $equiposLiderados = $participante->equipos()
+                ->wherePivot('Id_perfil', $perfilLider?->Id)
+                ->get();
 
-        return view('invitaciones.index', compact('invitaciones', 'participante'));
+            $equipoIds = $equiposLiderados->pluck('Id')->toArray();
+
+            if (!empty($equipoIds)) {
+                $solicitudes = SolicitudEquipo::whereIn('Equipo_id', $equipoIds)
+                    ->where('Estado', 'Pendiente')
+                    ->with(['equipo', 'usuario'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        }
+
+        return view('invitaciones.index', compact('invitaciones', 'solicitudes', 'participante', 'equiposLiderados'));
     }
 
     /**
