@@ -103,5 +103,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/jueces/{id}/edit', [AdminJuezController::class, 'edit'])->name('jueces.edit');
         Route::put('/jueces/{id}', [AdminJuezController::class, 'update'])->name('jueces.update');
         Route::delete('/jueces/{id}', [AdminJuezController::class, 'destroy'])->name('jueces.destroy');
+
+        // Gestión de Usuarios (solo para administradores)
+        Route::get('/usuarios', [App\Http\Controllers\AdminUsuarioController::class, 'index'])->name('usuarios.index');
+        Route::get('/usuarios/create', [App\Http\Controllers\AdminUsuarioController::class, 'create'])->name('usuarios.create');
+        Route::post('/usuarios', [App\Http\Controllers\AdminUsuarioController::class, 'store'])->name('usuarios.store');
+        Route::get('/usuarios/{id}', [App\Http\Controllers\AdminUsuarioController::class, 'show'])->name('usuarios.show');
+        Route::get('/usuarios/{id}/edit', [App\Http\Controllers\AdminUsuarioController::class, 'edit'])->name('usuarios.edit');
+        Route::put('/usuarios/{id}', [App\Http\Controllers\AdminUsuarioController::class, 'update'])->name('usuarios.update');
+        Route::delete('/usuarios/{id}', [App\Http\Controllers\AdminUsuarioController::class, 'destroy'])->name('usuarios.destroy');
+
+        // Reportes (solo para administradores)
+        Route::get('/reportes', [App\Http\Controllers\ReporteController::class, 'index'])->name('reportes.index');
+        Route::get('/reportes/usuarios', [App\Http\Controllers\ReporteController::class, 'usuarios'])->name('reportes.usuarios');
+        Route::get('/reportes/jueces', [App\Http\Controllers\ReporteController::class, 'jueces'])->name('reportes.jueces');
+        Route::get('/reportes/eventos', [App\Http\Controllers\ReporteController::class, 'eventos'])->name('reportes.eventos');
+        Route::get('/reportes/equipos', [App\Http\Controllers\ReporteController::class, 'equipos'])->name('reportes.equipos');
+        Route::get('/reportes/estadisticas', [App\Http\Controllers\ReporteController::class, 'estadisticas'])->name('reportes.estadisticas');
     });
 });

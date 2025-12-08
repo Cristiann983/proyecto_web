@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>DevTeams - Gestión de Jueces</title>
+    <title>DevTeams - Gestión de Usuarios</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
@@ -40,7 +40,7 @@
         <!-- Encabezado -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">Panel de Administración</h1>
-            <p class="text-gray-600">Gestiona equipos, eventos y jueces del sistema</p>
+            <p class="text-gray-600">Gestiona equipos, eventos, jueces y usuarios del sistema</p>
         </div>
 
         <!-- Navegación de pestañas con botón -->
@@ -57,33 +57,33 @@
                     <span>Eventos</span>
                 </a>
                 <a href="{{ route('admin.jueces.list') }}"
-                   class="px-8 py-3 rounded-full bg-white text-gray-900 font-medium shadow-sm flex items-center gap-2">
+                   class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
                     <span>⚖️</span>
                     <span>Jueces</span>
                 </a>
                 <a href="{{ route('admin.usuarios.index') }}"
-                   class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
+                   class="px-8 py-3 rounded-full bg-white text-gray-900 font-medium shadow-sm flex items-center gap-2">
                     <span>👤</span>
                     <span>Usuarios</span>
                 </a>
                 <a href="{{ route('admin.reportes.index') }}"
                    class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                    <span>📈</span>
+                    <span>📊</span>
                     <span>Reportes</span>
                 </a>
             </div>
 
-            <a href="{{ route('admin.jueces.create') }}"
+            <a href="{{ route('admin.usuarios.create') }}"
                class="flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium shadow-sm transition">
                 <span>+</span>
-                <span>Registrar Nuevo Juez</span>
+                <span>Crear Nuevo Usuario</span>
             </a>
         </div>
 
         <!-- Título de sección -->
         <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Gestión de Jueces</h2>
-            <p class="text-gray-600">Administra los jueces registrados en el sistema</p>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Gestión de Usuarios</h2>
+            <p class="text-gray-600">Administra todos los usuarios registrados en el sistema</p>
         </div>
 
         <!-- Mensajes -->
@@ -100,15 +100,15 @@
         @endif
 
         <!-- Estadísticas -->
-        <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl border border-gray-200 p-6">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <span class="text-2xl">👨‍⚖️</span>
+                        <span class="text-2xl">👥</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-600">Total de Jueces</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ $jueces->count() }}</p>
+                        <p class="text-sm text-gray-600">Total Usuarios</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ $usuarios->count() }}</p>
                     </div>
                 </div>
             </div>
@@ -116,14 +116,12 @@
             <div class="bg-white rounded-xl border border-gray-200 p-6">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <span class="text-2xl">📅</span>
+                        <span class="text-2xl">✅</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-600">Jueces Activos</p>
+                        <p class="text-sm text-gray-600">Usuarios Activos</p>
                         <p class="text-2xl font-bold text-gray-900">
-                            {{ $jueces->filter(function($juez) {
-                                return $juez->eventos->where('Estado', 'Activo')->count() > 0;
-                            })->count() }}
+                            {{ $usuarios->where('is_active', true)->count() }}
                         </p>
                     </div>
                 </div>
@@ -132,39 +130,53 @@
             <div class="bg-white rounded-xl border border-gray-200 p-6">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <span class="text-2xl">🎯</span>
+                        <span class="text-2xl">🎓</span>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-600">Especialidades</p>
+                        <p class="text-sm text-gray-600">Participantes</p>
                         <p class="text-2xl font-bold text-gray-900">
-                            {{ $jueces->pluck('especialidad.Nombre')->unique()->count() }}
+                            {{ $usuarios->filter(fn($u) => $u->hasRole('Participante'))->count() }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">⚖️</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Jueces</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            {{ $usuarios->filter(fn($u) => $u->hasRole('Juez'))->count() }}
                         </p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Lista de jueces -->
-        @if($jueces->count() > 0)
+        <!-- Lista de usuarios -->
+        @if($usuarios->count() > 0)
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Juez
+                                    Usuario
                                 </th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Especialidad
+                                    Rol
                                 </th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                     Contacto
                                 </th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Eventos Asignados
+                                    Estado
                                 </th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Calificaciones
+                                    Fecha de Registro
                                 </th>
                                 <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                     Acciones
@@ -172,80 +184,94 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            @foreach($jueces as $juez)
+                            @foreach($usuarios as $usuario)
                                 <tr class="hover:bg-gray-50 transition">
-                                    <!-- Juez -->
+                                    <!-- Usuario -->
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                                                 <span class="text-lg font-bold text-purple-600">
-                                                    {{ substr($juez->Nombre, 0, 1) }}
+                                                    {{ substr($usuario->name, 0, 1) }}
                                                 </span>
                                             </div>
                                             <div>
-                                                <p class="font-medium text-gray-900">{{ $juez->Nombre }}</p>
-                                                <p class="text-sm text-gray-500">ID: {{ $juez->Id }}</p>
+                                                <p class="font-medium text-gray-900">{{ $usuario->name }}</p>
+                                                <p class="text-sm text-gray-500">ID: {{ $usuario->id }}</p>
                                             </div>
                                         </div>
                                     </td>
 
-                                    <!-- Especialidad -->
+                                    <!-- Rol -->
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                                            {{ $juez->especialidad->Nombre ?? 'Sin especialidad' }}
-                                        </span>
+                                        <div class="flex flex-wrap gap-1">
+                                            @forelse($usuario->roles as $rol)
+                                                <span class="inline-flex items-center px-3 py-1 
+                                                    @if($rol->Nombre === 'Administrador') bg-red-100 text-red-700
+                                                    @elseif($rol->Nombre === 'Juez') bg-orange-100 text-orange-700
+                                                    @else bg-blue-100 text-blue-700
+                                                    @endif
+                                                    rounded-full text-sm font-medium">
+                                                    {{ $rol->Nombre }}
+                                                </span>
+                                            @empty
+                                                <span class="text-gray-500 text-sm">Sin rol</span>
+                                            @endforelse
+                                        </div>
                                     </td>
 
                                     <!-- Contacto -->
                                     <td class="px-6 py-4">
                                         <div class="text-sm">
-                                            <p class="text-gray-900">{{ $juez->Correo }}</p>
-                                            @if($juez->telefono)
-                                                <p class="text-gray-500">{{ $juez->telefono }}</p>
+                                            <p class="text-gray-900">{{ $usuario->email }}</p>
+                                            @if($usuario->participante && $usuario->participante->telefono)
+                                                <p class="text-gray-500">{{ $usuario->participante->telefono }}</p>
+                                            @elseif($usuario->juez && $usuario->juez->telefono)
+                                                <p class="text-gray-500">{{ $usuario->juez->telefono }}</p>
                                             @endif
                                         </div>
                                     </td>
 
-                                    <!-- Eventos asignados -->
+                                    <!-- Estado -->
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-lg">📅</span>
-                                            <span class="font-medium text-gray-900">{{ $juez->eventos->count() }}</span>
-                                            <span class="text-sm text-gray-500">
-                                                ({{ $juez->eventos->where('Estado', 'Activo')->count() }} activos)
+                                        @if($usuario->is_active)
+                                            <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                                ✓ Activo
                                             </span>
-                                        </div>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                                                ○ Inactivo
+                                            </span>
+                                        @endif
                                     </td>
 
-                                    <!-- Calificaciones -->
+                                    <!-- Fecha de Registro -->
                                     <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-lg">⭐</span>
-                                            <span class="font-medium text-gray-900">{{ $juez->calificaciones->count() }}</span>
+                                        <div class="text-sm text-gray-600">
+                                            {{ $usuario->created_at->format('d/m/Y') }}
                                         </div>
                                     </td>
 
                                     <!-- Acciones -->
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-2">
-                                            <a href="{{ route('admin.jueces.show', $juez->Id) }}"
+                                            <a href="{{ route('admin.usuarios.show', $usuario->id) }}"
                                                class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition"
                                                title="Ver detalles">
                                                 👁️ Ver
                                             </a>
-                                            <a href="{{ route('admin.jueces.edit', $juez->Id) }}"
+                                            <a href="{{ route('admin.usuarios.edit', $usuario->id) }}"
                                                class="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition"
-                                               title="Editar juez">
+                                               title="Editar usuario">
                                                 ✏️ Editar
                                             </a>
-                                            <form method="POST" action="{{ route('admin.jueces.destroy', $juez->Id) }}"
-                                                  onsubmit="return confirm('¿Estás seguro de eliminar a este juez? Esta acción no se puede deshacer.');"
+                                            <form method="POST" action="{{ route('admin.usuarios.destroy', $usuario->id) }}"
+                                                  onsubmit="return confirm('¿Estás seguro de eliminar a este usuario? Esta acción no se puede deshacer.');"
                                                   class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
                                                         class="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition"
-                                                        title="Eliminar juez">
+                                                        title="Eliminar usuario">
                                                     🗑️ Eliminar
                                                 </button>
                                             </form>
@@ -266,11 +292,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">No hay jueces registrados</h3>
-                    <p class="text-gray-600 mb-6">Comienza registrando el primer juez en el sistema.</p>
-                    <a href="{{ route('admin.jueces.create') }}"
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">No hay usuarios registrados</h3>
+                    <p class="text-gray-600 mb-6">Comienza creando el primer usuario en el sistema.</p>
+                    <a href="{{ route('admin.usuarios.create') }}"
                        class="px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium transition">
-                        + Registrar Primer Juez
+                        + Crear Primer Usuario
                     </a>
                 </div>
             </div>

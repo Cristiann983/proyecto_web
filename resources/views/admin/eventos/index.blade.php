@@ -59,6 +59,16 @@
                 <span>⚖️</span>
                 <span>Jueces</span>
             </a>
+            <a href="{{ route('admin.usuarios.index') }}"
+               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
+                <span>👤</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="{{ route('admin.reportes.index') }}"
+               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
+                <span>📈</span>
+                <span>Reportes</span>
+            </a>
         </div>
 
         <!-- Sección de eventos -->

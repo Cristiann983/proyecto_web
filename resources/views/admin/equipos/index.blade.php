@@ -42,19 +42,29 @@
             <p class="text-gray-600">Gestiona equipos, eventos y jueces del sistema</p>
         </div>
 
-        <!-- Navegación de pestañas -->
-        <div class="mb-8 bg-white rounded-full shadow-sm p-2 inline-flex gap-1 border border-gray-200">
-            <a href="{{ route('admin.equipos.index') }}" class="px-6 py-2 rounded-full bg-gray-200 text-gray-900 font-medium flex items-center gap-2">
+        <!-- Pestañas de navegación -->
+        <div class="mb-8 bg-gray-100 rounded-full p-1 inline-flex gap-1">
+            <a href="{{ route('admin.equipos.index') }}" 
+               class="px-8 py-3 rounded-full bg-white text-gray-900 font-medium shadow-sm flex items-center gap-2">
                 <span>👥</span>
                 <span>Equipos</span>
             </a>
-            <a href="{{ route('admin.eventos.index') }}" class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-50 flex items-center gap-2">
+            <a href="{{ route('admin.eventos.index') }}" 
+               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
                 <span>📅</span>
                 <span>Eventos</span>
             </a>
             <a href="{{ route('admin.jueces.list') }}" class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-50 flex items-center gap-2">
                 <span>⚖️</span>
                 <span>Jueces</span>
+            </a>
+            <a href="{{ route('admin.usuarios.index') }}" class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-50 flex items-center gap-2">
+                <span>👤</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="{{ route('admin.reportes.index') }}" class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-50 flex items-center gap-2">
+                <span>📈</span>
+                <span>Reportes</span>
             </a>
         </div>
 
