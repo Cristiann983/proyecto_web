@@ -52,6 +52,8 @@ Route::middleware(['role:Participante'])->group(function () {
     Route::get('/codigos', [RepositorioController::class, 'index'])->name('codigos.index');
     Route::post('/repositorios', [RepositorioController::class, 'store'])->name('repositorios.store');
     Route::delete('/repositorios/{id}', [RepositorioController::class, 'destroy'])->name('repositorios.destroy');
+    Route::post('/repositorios/{id}/subir-archivo', [RepositorioController::class, 'subirArchivo'])->name('repositorios.subirArchivo');
+    Route::delete('/repositorios/{id}/eliminar-archivo/{index}', [RepositorioController::class, 'eliminarArchivo'])->name('repositorios.eliminarArchivo');
 
     // Rutas de Invitaciones
     Route::get('/invitaciones', [InvitacionController::class, 'index'])->name('invitaciones.index');

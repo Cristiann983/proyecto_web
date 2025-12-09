@@ -131,6 +131,51 @@
                     </div>
                 </div>
 
+                {{-- Botón de Descarga de Constancia (si está inscrito y el evento ha finalizado) --}}
+                @if($estaInscrito && $proyectos->isNotEmpty())
+                    @php
+                        $ahora = now();
+                        $eventoFinalizado = $ahora > $evento->Fecha_fin;
+                        $proyecto = $proyectos->first();
+                        $equipo = $proyecto->equipo ?? null;
+                        $tieneCalificaciones = $proyecto && $proyecto->calificaciones && $proyecto->calificaciones->count() > 0;
+                    @endphp
+
+                    @if($eventoFinalizado && $equipo)
+                        <div class="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl border border-purple-200 p-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center text-3xl shadow-sm">
+                                        📜
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900">Constancia de Participación</h3>
+                                        <p class="text-sm text-gray-600">Descarga tu certificado oficial del evento</p>
+                                        @if(!$tieneCalificaciones)
+                                            <p class="text-xs text-orange-600 mt-1">⏳ Esperando calificaciones de los jueces</p>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div>
+                                    @if($tieneCalificaciones)
+                                        <a href="{{ route('equipos.constancia', $equipo->Id) }}" 
+                                           class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg shadow-sm transition">
+                                            <span>📥</span>
+                                            <span>Descargar Constancia</span>
+                                        </a>
+                                    @else
+                                        <button disabled
+                                                class="inline-flex items-center gap-2 px-6 py-3 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed">
+                                            <span>📥</span>
+                                            <span>Descargar Constancia</span>
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+
                 <!-- 🏆 RANKING DEL EVENTO (solo si está finalizado) -->
                 @if(($evento->estado === 'finalizado' || $evento->Estado === 'Finalizado') && $proyectosRanking->count() > 0)
                     <div class="mb-8 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border-2 border-yellow-300 p-8">

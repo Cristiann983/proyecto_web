@@ -7,39 +7,9 @@
     <title>DevTeams - Estado de Mis Solicitudes</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50">
-    <!-- Navegación -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center gap-8">
-                    <div class="flex items-center gap-2">
-                        <div class="text-2xl text-purple-600">&lt;/&gt;</div>
-                        <span class="text-xl font-bold">DevTeams</span>
-                    </div>
-                </div>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    @include('partials._navigation')
 
-                <div class="flex items-center gap-4">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                        <span>← Volver al Dashboard</span>
-                    </a>
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                            <span>🚪</span>
-                            <span>Cerrar sesión</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">Estado de Mis Solicitudes</h1>
-            <p class="text-gray-600">Monitorea el estado de las solicitudes que has enviado a los equipos</p>
-        </div>
 
         @if($solicitudes->count() > 0)
             <div class="space-y-4">

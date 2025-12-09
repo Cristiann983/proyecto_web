@@ -23,9 +23,15 @@ class JuezController extends Controller
             $isAdmin = $user->hasRole('Administrador');
 
             // Obtener eventos asignados al juez (si no es admin puro)
+            // Mostrar eventos que hayan finalizado hace menos de 30 días o que aún estén activos
             $eventosAsignados = $juez ? $juez->eventos()
-                ->where('Fecha_fin', '>=', now())
+                ->where(function($query) {
+                    // Eventos que aún no terminan O que terminaron hace menos de 30 días
+                    $query->where('Fecha_fin', '>=', now()->subDays(30));
+                })
                 ->with(['equipos.participantes.usuario', 'equipos.proyecto'])
+                ->orderByRaw("CASE WHEN Estado = 'Finalizado' THEN 1 ELSE 0 END")
+                ->orderBy('Fecha_fin', 'desc')
                 ->get() : collect();
 
             // Si se selecciona un evento específico, paginar sus equipos

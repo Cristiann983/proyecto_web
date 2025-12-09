@@ -434,9 +434,11 @@ class EquipoController extends Controller
             return back()->with('error', 'Este equipo no tiene un proyecto asociado a un evento.');
         }
 
-        // 🔒 VALIDAR QUE EL EVENTO HAYA FINALIZADO
-        if ($proyecto->evento->Estado !== 'Finalizado') {
-            return back()->with('error', '⏳ La constancia solo estará disponible después de que el evento haya finalizado. Estado actual: ' . $proyecto->evento->Estado);
+        // 🔒 VALIDAR QUE EL EVENTO HAYA FINALIZADO (por fecha)
+        $ahora = now();
+        if ($ahora <= $proyecto->evento->Fecha_fin) {
+            $fechaFin = \Carbon\Carbon::parse($proyecto->evento->Fecha_fin)->format('d/m/Y H:i');
+            return back()->with('error', "⏳ La constancia solo estará disponible después de que el evento haya finalizado. El evento termina el: {$fechaFin}");
         }
 
         // 🔒 VALIDAR QUE TENGAN CALIFICACIONES
@@ -448,6 +450,10 @@ class EquipoController extends Controller
         // Obtener el rol del participante
         $perfil = Perfil::find($miembro->Id_perfil);
 
+        // Verificar si el equipo quedó en el top 3 del ranking
+        $posicionRanking = $proyecto->ranking_posicion;
+        $esGanador = $posicionRanking && $posicionRanking <= 3;
+
         // Datos para el PDF
         $datos = [
             'participante' => $participante,
@@ -456,7 +462,9 @@ class EquipoController extends Controller
             'evento' => $proyecto->evento,
             'perfil' => $perfil,
             'fecha_emision' => now(),
-            'codigo_verificacion' => strtoupper(substr(md5($equipo->Id . $participante->Id . $proyecto->evento->Id), 0, 10))
+            'codigo_verificacion' => strtoupper(substr(md5($equipo->Id . $participante->Id . $proyecto->evento->Id), 0, 10)),
+            'posicion_ranking' => $posicionRanking,
+            'es_ganador' => $esGanador
         ];
 
         $pdf = \PDF::loadView('equipos.pdf.constancia', $datos);

@@ -202,6 +202,79 @@
                                     </div>
                                 </div>
 
+                                <!-- 📋 Información Detallada del Equipo -->
+                                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                                    <!-- Miembros del equipo -->
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                            <span>👥</span>
+                                            <span>Miembros del Equipo</span>
+                                        </h4>
+                                        <div class="space-y-2">
+                                            @foreach($equipo->participantes as $miembro)
+                                                <div class="flex items-start gap-3 p-2 bg-white rounded">
+                                                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                        <span class="text-purple-600 font-bold text-sm">{{ substr($miembro->Nombre, 0, 1) }}</span>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="font-medium text-gray-900 text-sm">{{ $miembro->Nombre }}</p>
+                                                        <p class="text-xs text-gray-500">{{ $miembro->Correo }}</p>
+                                                        @if($miembro->carrera)
+                                                            <p class="text-xs text-gray-600">📚 {{ $miembro->carrera->Nombre }}</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+
+                                    <!-- Repositorio -->
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                            <span>📦</span>
+                                            <span>Repositorio</span>
+                                        </h4>
+                                        @if($proyecto->repositorio)
+                                            <div class="space-y-3">
+                                                <div class="bg-white rounded p-3">
+                                                    <a href="{{ $proyecto->repositorio->Url }}" target="_blank" 
+                                                       class="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center gap-2 mb-2">
+                                                        <span>🔗</span>
+                                                        <span class="truncate">{{ $proyecto->repositorio->getNombreRepositorio() }}</span>
+                                                    </a>
+                                                    <p class="text-xs text-gray-500 break-all">{{ $proyecto->repositorio->Url }}</p>
+                                                </div>
+
+                                                <!-- Archivos del repositorio -->
+                                                @if($proyecto->repositorio->archivos && count($proyecto->repositorio->archivos) > 0)
+                                                    <div>
+                                                        <p class="text-xs font-medium text-gray-700 mb-2">📎 Evidencias ({{ count($proyecto->repositorio->archivos) }})</p>
+                                                        <div class="space-y-1 max-h-40 overflow-y-auto">
+                                                            @foreach($proyecto->repositorio->archivos as $archivo)
+                                                                <a href="{{ asset('storage/' . $archivo['ruta']) }}" target="_blank"
+                                                                   class="flex items-center gap-2 p-2 bg-white rounded hover:bg-purple-50 transition group">
+                                                                    @if(in_array($archivo['tipo'], ['jpg', 'jpeg', 'png', 'gif']))
+                                                                        <img src="{{ asset('storage/' . $archivo['ruta']) }}" class="w-10 h-10 object-cover rounded">
+                                                                    @else
+                                                                        <span class="text-2xl">📄</span>
+                                                                    @endif
+                                                                    <div class="flex-1 min-w-0">
+                                                                        <p class="text-xs font-medium text-gray-900 truncate group-hover:text-purple-600">{{ $archivo['nombre'] }}</p>
+                                                                        <p class="text-xs text-gray-500">{{ number_format($archivo['tamano'] / 1024, 1) }} KB</p>
+                                                                    </div>
+                                                                    <span class="text-xs text-purple-600 opacity-0 group-hover:opacity-100">Ver →</span>
+                                                                </a>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <p class="text-sm text-gray-500 italic bg-white rounded p-3">No hay repositorio vinculado</p>
+                                        @endif
+                                    </div>
+                                </div>
+
                                 <!-- Formulario de calificación -->
                                 <form class="calificacion-form" data-proyecto-id="{{ $proyecto->Id }}">
                                     @csrf

@@ -7,68 +7,8 @@
     <title>DevTeams - Invitaciones</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50">
-    <!-- Navegación -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <div class="text-2xl text-purple-600">&lt;/&gt;</div>
-                    <span class="text-xl font-bold">DevTeams</span>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('perfil.show') }}" class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                        <span>👤</span>
-                        <span>Mi Perfil</span>
-                    </a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                            <span>📋</span>
-                            <span>Cerrar sesión</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Dashboard -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-            <p class="text-gray-600">Gestiona tus equipos, eventos, invitaciones y código</p>
-        </div>
-
-        <!-- Navegación de pestañas -->
-        <div class="mb-8 bg-gray-100 rounded-full p-1 inline-flex gap-1">
-            <a href="{{ route('dashboard') }}"
-               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                <span>👥</span>
-                <span>Equipos</span>
-            </a>
-            <a href="{{ route('eventos.index') }}"
-               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                <span>📅</span>
-                <span>Eventos</span>
-            </a>
-            <a href="{{ route('codigos.index') }}"
-               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                <span>&lt;/&gt;</span>
-                <span>Códigos</span>
-            </a>
-            <a href="{{ route('invitaciones.index') }}"
-               class="px-8 py-3 rounded-full bg-white text-gray-900 font-medium shadow-sm flex items-center gap-2">
-                <span>✉️</span>
-                <span>Invitaciones</span>
-                @if(isset($invitaciones) && $invitaciones->where('Estado', 'Pendiente')->count() > 0)
-                    <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {{ $invitaciones->where('Estado', 'Pendiente')->count() }}
-                    </span>
-                @endif
-            </a>
-        </div>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    @include('partials._navigation')
 
         <!-- Mensajes -->
         @if (session('success'))
@@ -88,6 +28,7 @@
             <h2 class="text-2xl font-bold text-gray-900 mb-2">Gestión de Equipos</h2>
             <p class="text-gray-600">Invitaciones recibidas y solicitudes de unión</p>
         </div>
+
 
         <!-- Tabs principales -->
         <div class="mb-8 flex gap-2 border-b border-gray-200">

@@ -7,44 +7,9 @@
     <title>DevTeams - Buscar Equipos</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50">
-    <!-- Navegación -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center gap-8">
-                    <div class="flex items-center gap-2">
-                        <div class="text-2xl text-purple-600">&lt;/&gt;</div>
-                        <span class="text-xl font-bold">DevTeams</span>
-                    </div>
-                    <div class="hidden md:flex items-center gap-6">
-                        <a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-gray-900">Mis Equipos</a>
-                        <a href="{{ route('eventos.index') }}" class="text-gray-600 hover:text-gray-900">Eventos</a>
-                        <a href="{{ route('solicitudes.buscar-equipos') }}" class="text-purple-600 font-semibold">Explorar Equipos</a>
-                    </div>
-                </div>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    @include('partials._navigation')
 
-                <div class="flex items-center gap-4">
-                    <a href="{{ route('solicitudes.mi-estado') }}" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm">
-                        <span>📋</span>
-                        <span>Mis Solicitudes</span>
-                    </a>
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                            <span>🚪</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">Explorar Equipos</h1>
-            <p class="text-gray-600">Encuentra equipos disponibles y solicita unirte</p>
-        </div>
 
         <!-- Búsqueda -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
@@ -121,7 +86,7 @@
                                         📬 Solicitar Unirse
                                     </button>
                                 @endif
-                                <a href="{{ route('equipos.show', $equipo->Id) }}" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-900 py-2 px-4 rounded-lg transition font-semibold text-center text-sm">
+                                <a href="{{ route('equipos.show', $equipo->Id) }}" class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-900 py-2 px-4 rounded-lg transition font-semibold text-center text-sm">
                                     Ver Detalles
                                 </a>
                             </div>

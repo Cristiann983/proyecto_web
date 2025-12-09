@@ -125,12 +125,12 @@ class EventoController extends Controller
         $proyectos = collect();
         
         if ($participante) {
-            $proyectos = DB::table('proyecto')
-                ->join('equipo', 'proyecto.Equipo_id', '=', 'equipo.Id')
-                ->join('participante_equipo', 'equipo.Id', '=', 'participante_equipo.Id_equipo')
-                ->where('proyecto.Evento_id', $evento->Id)
-                ->where('participante_equipo.Id_participante', $participante->Id)
-                ->select('proyecto.*', 'equipo.Nombre as nombre_equipo')
+            // Obtener los proyectos del participante para este evento
+            $proyectos = Proyecto::where('Evento_id', $evento->Id)
+                ->whereHas('equipo.participantes', function($query) use ($participante) {
+                    $query->where('participante.Id', $participante->Id);
+                })
+                ->with(['equipo', 'calificaciones'])
                 ->get();
             
             $estaInscrito = $proyectos->isNotEmpty();

@@ -15,6 +15,11 @@ class Repositorio extends Model
     protected $fillable = [
         'Proyecto_id',
         'Url',
+        'archivos',
+    ];
+
+    protected $casts = [
+        'archivos' => 'array',
     ];
 
     // Relación con Proyecto

@@ -33,82 +33,7 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-    <!-- Navegación -->
-    <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center shadow-md">
-                        <span class="text-xl text-white font-bold">&lt;/&gt;</span>
-                    </div>
-                    <div>
-                        <span class="text-xl font-bold text-gray-900">DevTeams</span>
-                        <p class="text-xs text-gray-500">Plataforma de hackathons</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('perfil.show') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-purple-50 transition-all duration-200 group">
-                        <span class="group-hover:scale-110 transition-transform">👤</span>
-                        <span class="font-medium">Mi Perfil</span>
-                    </a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-lg hover:from-gray-900 hover:to-black transition-all duration-200 shadow-md hover:shadow-lg">
-                            <span>🚪</span>
-                            <span>Cerrar sesión</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Contenido -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Encabezado con gradiente -->
-        <div class="mb-8 relative overflow-hidden rounded-2xl gradient-bg p-8 shadow-xl">
-            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-            <div class="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-            <div class="relative">
-                <h1 class="text-4xl font-bold text-white mb-2">¡Bienvenido de vuelta! 👋</h1>
-                <p class="text-purple-100">Gestiona tus equipos, eventos, invitaciones y código en un solo lugar</p>
-            </div>
-        </div>
-
-        <!-- Pestañas de navegación -->
-        <div class="mb-8 bg-gray-100 rounded-full p-1 inline-flex gap-1">
-            <a href="{{ route('dashboard') }}"
-               class="px-8 py-3 rounded-full bg-white text-gray-900 font-medium shadow-sm flex items-center gap-2">
-                <span>👥</span>
-                <span>Equipos</span>
-            </a>
-            <a href="{{ route('eventos.index') }}"
-               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                <span>📅</span>
-                <span>Eventos</span>
-            </a>
-            <a href="{{ route('codigos.index') }}"
-               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                <span>&lt;/&gt;</span>
-                <span>Códigos</span>
-            </a>
-            <a href="{{ route('invitaciones.index') }}"
-               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                <span>✉️</span>
-                <span>Invitaciones</span>
-            </a>
-            <a href="{{ route('solicitudes.buscar-equipos') }}"
-               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                <span>🔍</span>
-                <span>Explorar</span>
-            </a>
-            <a href="{{ route('solicitudes.mi-estado') }}"
-               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
-                <span>📋</span>
-                <span>Mis Solicitudes</span>
-            </a>
-        </div>
+    @include('partials._navigation')
 
         <!-- Sección de equipos con botón crear -->
         <div class="flex justify-between items-center mb-6 fade-in">
@@ -203,69 +128,29 @@
                     @endphp
 
                     @if($proyecto && $calificaciones->count() > 0)
+                        @php
+                            $nombreEvento = $proyecto->evento ? $proyecto->evento->Nombre : 'Sin evento';
+                            $promedioGeneral = $calificaciones->avg('Calificacion');
+                            $totalGeneral = $calificaciones->sum('Calificacion');
+                            $maxGeneral = $calificaciones->count() * 10;
+                        @endphp
+                        
                         <div class="mb-4 pt-4 border-t border-gray-200">
-                            <p class="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
-                                <span>⭐</span>
-                                <span>Calificaciones Recibidas</span>
-                            </p>
-
-                            <div class="space-y-3">
-                                @foreach($juecesCalificadores as $juezId => $calificacionesJuez)
-                                    @php
-                                        $juez = $calificacionesJuez->first()->juez;
-                                        $totalPuntos = $calificacionesJuez->sum('Calificacion');
-                                        $maxPuntos = $calificacionesJuez->count() * 10;
-                                        $promedio = $calificacionesJuez->avg('Calificacion');
-                                    @endphp
-
-                                    <div class="bg-purple-50 rounded-lg p-3">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center">
-                                                    <span class="text-xs font-bold text-purple-700">
-                                                        {{ substr($juez->Nombre, 0, 1) }}
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <p class="text-sm font-medium text-gray-900">{{ $juez->Nombre }}</p>
-                                                    <p class="text-xs text-gray-600">{{ $juez->especialidad->Nombre ?? 'Juez' }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <p class="text-lg font-bold text-purple-600">{{ number_format($promedio, 1) }}/10</p>
-                                                <p class="text-xs text-gray-600">{{ $totalPuntos }}/{{ $maxPuntos }} pts</p>
-                                            </div>
-                                        </div>
-
-                                        <!-- Detalles por criterio -->
-                                        <div class="mt-2 pt-2 border-t border-purple-200 space-y-1">
-                                            @foreach($calificacionesJuez as $calificacion)
-                                                <div class="flex items-center justify-between text-xs">
-                                                    <span class="text-gray-700">{{ $calificacion->criterio->descripcion }}</span>
-                                                    <span class="font-medium text-purple-600">{{ $calificacion->Calificacion }}/10</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <!-- Promedio general -->
-                            @php
-                                $promedioGeneral = $calificaciones->avg('Calificacion');
-                                $totalGeneral = $calificaciones->sum('Calificacion');
-                                $maxGeneral = $calificaciones->count() * 10;
-                            @endphp
-                            <div class="mt-3 bg-gray-900 rounded-lg p-3 text-white">
+                            <div class="bg-gradient-to-r from-purple-600 to-blue-500 rounded-lg p-4 text-white">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-sm font-medium">Promedio General</span>
+                                    <div>
+                                        <p class="text-sm opacity-90 mb-1">📅 {{ $nombreEvento }}</p>
+                                        <p class="text-xs opacity-75">Calificación del evento</p>
+                                    </div>
                                     <div class="text-right">
-                                        <p class="text-xl font-bold">{{ number_format($promedioGeneral, 1) }}/10</p>
-                                        <p class="text-xs opacity-75">{{ $totalGeneral }}/{{ $maxGeneral }} pts totales</p>
+                                        <p class="text-3xl font-bold">{{ number_format($promedioGeneral, 1) }}/10</p>
+                                        <p class="text-xs opacity-75">{{ $totalGeneral }}/{{ $maxGeneral }} pts</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+
                     @elseif($proyecto)
                         <div class="mb-4 pt-4 border-t border-gray-200">
                             <div class="bg-gray-50 rounded-lg p-3 text-center">
@@ -285,13 +170,6 @@
                            class="block w-full py-2.5 bg-gray-900 text-white text-center rounded-lg hover:bg-gray-800 transition font-medium">
                             Gestionar
                         </a>
-                        @if($proyecto && $proyecto->evento)
-                            <a href="{{ route('equipos.constancia', $equipo->Id) }}" 
-                               class="block w-full py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center rounded-lg hover:from-purple-700 hover:to-blue-700 transition font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                                <span>📄</span>
-                                <span>Descargar Constancia</span>
-                            </a>
-                        @endif
                     </div>
                 </div>
             @empty

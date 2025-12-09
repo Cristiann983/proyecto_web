@@ -15,7 +15,7 @@
                     <div class="text-4xl">&lt;/&gt;</div>
                     <h1 class="text-3xl font-bold">DevTeams</h1>
                 </div>
-                <p class="text-xl opacity-90">✨ Plataforma de Desarrollo</p>
+                <p class="text-xl opacity-90"> Plataforma de Desarrollo</p>
             </div>
             
             <div class="space-y-6">
@@ -117,7 +117,7 @@
             </div>
 
             <div class="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
-                <p>Acerca de <span class="mx-2">|</span> Acerca de <span class="mx-2">|</span> Acerca de</p>
+                <p>DevTeams®. Todos los derechos reservados 2025©.</p>
             </div>
         </div>
     </div>
@@ -127,7 +127,7 @@
             <div class="text-2xl text-purple-600">&lt;/&gt;</div>
         </div>
         <p class="text-white text-xs mt-2">DevTeams</p>
-        <p class="text-white text-xs">✨ Plataforma de Desarrollo</p>
+        <p class="text-white text-xs"> Plataforma de Desarrollo</p>
     </div>
 
     <script>

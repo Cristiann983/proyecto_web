@@ -38,6 +38,9 @@ class CalificacionController extends Controller
         $juez = Juez::where('user_id', $user->id)->first();
 
         if (!$juez) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Solo los jueces pueden calificar proyectos.'], 403);
+            }
             return back()->with('error', 'Solo los jueces pueden calificar proyectos.');
         }
 
@@ -46,29 +49,39 @@ class CalificacionController extends Controller
         $evento = $proyecto->evento;
 
         if (!$evento) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El proyecto no está asociado a ningún evento.'
-            ], 400);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'El proyecto no está asociado a ningún evento.'], 400);
+            }
+            return back()->with('error', 'El proyecto no está asociado a ningún evento.');
         }
 
-        if ($evento->Estado !== 'Finalizado') {
-            return response()->json([
-                'success' => false,
-                'message' => '⏳ No puedes calificar aún. Solo se pueden asignar calificaciones cuando el evento haya finalizado. Estado actual: ' . $evento->Estado
-            ], 403);
+        // Verificar que el evento haya finalizado (por fecha)
+        $ahora = now();
+        if ($ahora <= $evento->Fecha_fin) {
+            $fechaFin = \Carbon\Carbon::parse($evento->Fecha_fin)->format('d/m/Y H:i');
+            $mensaje = "⏳ No puedes calificar aún. Solo se pueden asignar calificaciones cuando el evento haya finalizado. El evento termina el: {$fechaFin}";
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $mensaje], 403);
+            }
+            return back()->with('error', $mensaje);
         }
 
         // Verificar que el juez esté asignado al evento del proyecto
         $eventoId = $proyecto->Evento_id;
 
         if (!$eventoId) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'El proyecto no está asignado a ningún evento.'], 400);
+            }
             return back()->with('error', 'El proyecto no está asignado a ningún evento.');
         }
 
         $juezAsignado = $juez->eventos()->where('evento.Id', $eventoId)->exists();
 
         if (!$juezAsignado) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'No estás asignado como juez para este evento.'], 403);
+            }
             return back()->with('error', 'No estás asignado como juez para este evento.');
         }
 
