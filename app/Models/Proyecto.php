@@ -18,6 +18,9 @@ class Proyecto extends Model
         'Asesor_id',
         'Nombre',
         'Categoria',
+        'ranking_posicion',
+        'ranking_puntuacion',
+        'ultima_calificacion',
     ];
 
     public function equipo()
@@ -57,5 +60,46 @@ class Proyecto extends Model
     public function calificacionPromedio()
     {
         return $this->calificaciones()->avg('Calificacion');
+    }
+
+    /**
+     * Scope para filtrar proyectos por evento
+     */
+    public function scopePorEvento($query, $eventoId)
+    {
+        return $query->where('Evento_id', $eventoId);
+    }
+
+    /**
+     * Scope para ordenar por ranking
+     */
+    public function scopeOrdenadoPorRanking($query)
+    {
+        return $query->orderBy('ranking_posicion', 'asc');
+    }
+
+    /**
+     * Verificar si el proyecto tiene ranking asignado
+     */
+    public function tieneRanking()
+    {
+        return !is_null($this->ranking_posicion);
+    }
+
+    /**
+     * Obtener medalla según posición (oro, plata, bronce)
+     */
+    public function obtenerMedalla()
+    {
+        if (!$this->tieneRanking()) {
+            return null;
+        }
+
+        return match($this->ranking_posicion) {
+            1 => '🥇',
+            2 => '🥈',
+            3 => '🥉',
+            default => null
+        };
     }
 }

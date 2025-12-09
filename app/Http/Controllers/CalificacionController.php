@@ -8,6 +8,7 @@ use App\Models\Calificacion;
 use App\Models\Juez;
 use App\Models\Proyecto;
 use App\Models\Criterio;
+use App\Services\RankingService;
 
 class CalificacionController extends Controller
 {
@@ -87,6 +88,15 @@ class CalificacionController extends Controller
 
         $totalEsperado = count($request->calificaciones);
         $todasGuardadas = $totalCalificaciones >= $totalEsperado;
+
+        // ✅ ACTUALIZAR RANKING DEL EVENTO AUTOMÁTICAMENTE
+        try {
+            $rankingService = app(RankingService::class);
+            $rankingService->calcularRankingEvento($proyecto->Evento_id);
+        } catch (\Exception $e) {
+            // Log del error pero no interrumpir el flujo
+            \Log::error('Error al calcular ranking: ' . $e->getMessage());
+        }
 
         // Retornar JSON si es petición AJAX
         if ($request->ajax() || $request->wantsJson()) {

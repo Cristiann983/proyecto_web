@@ -20,9 +20,13 @@ class Evento extends Model
         'Fecha_fin',
         'Ubicacion',
         'Estado',
+        'hora_inicio',
+        'hora_fin',
+        'tecnologias',
     ];
 
     protected $casts = [
+        'tecnologias' => 'array',
         'Fecha_inicio' => 'datetime',
         'Fecha_fin' => 'datetime',
     ];
@@ -58,10 +62,12 @@ class Evento extends Model
         return $this->hasMany(Criterio::class, 'Evento_id', 'Id');
     }
 
-    // ✅ Determinar estado dinámicamente basado en fechas
+    // ✅ Determinar estado dinámicamente basado en fechas Y HORAS
     public function getEstadoLabelAttribute()
     {
         $ahora = now();
+        
+        // Fecha_inicio y Fecha_fin ya incluyen las horas cuando se guardan
         $fechaInicio = $this->Fecha_inicio;
         $fechaFin = $this->Fecha_fin;
         

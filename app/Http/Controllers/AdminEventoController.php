@@ -49,8 +49,12 @@ class AdminEventoController extends Controller
             'dificultad' => 'nullable|string|max:100',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'hora_inicio' => 'nullable|date_format:H:i',
+            'hora_fin' => 'nullable|date_format:H:i',
             'ubicacion' => 'nullable|string|max:255',
             'estado' => 'nullable|in:Activo,Finalizado,Cancelado',
+            'tecnologias' => 'nullable|array',
+            'tecnologias.*' => 'string',
             'jueces' => 'nullable|array',
             'jueces.*' => 'exists:juez,Id',
             'criterios' => 'nullable|array',
@@ -66,10 +70,13 @@ class AdminEventoController extends Controller
                 'Nombre' => $request->nombre,
                 'Descripcion' => $request->descripcion,
                 'Categoria' => $request->dificultad,
-                'Fecha_inicio' => $request->fecha_inicio,
-                'Fecha_fin' => $request->fecha_fin,
+                'Fecha_inicio' => $request->fecha_inicio . ($request->hora_inicio ? ' ' . $request->hora_inicio : ' 00:00:00'),
+                'Fecha_fin' => $request->fecha_fin . ($request->hora_fin ? ' ' . $request->hora_fin : ' 23:59:59'),
+                'hora_inicio' => $request->hora_inicio,
+                'hora_fin' => $request->hora_fin,
                 'Ubicacion' => $request->ubicacion,
                 'Estado' => $request->estado ?? 'Activo',
+                'tecnologias' => $request->tecnologias ?? [],
             ]);
 
             // Asignar jueces mediante tabla pivote
@@ -152,10 +159,15 @@ class AdminEventoController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string',
+            'dificultad' => 'nullable|string|max:100',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'hora_inicio' => 'nullable|date_format:H:i',
+            'hora_fin' => 'nullable|date_format:H:i',
             'ubicacion' => 'nullable|string|max:255',
             'estado' => 'nullable|in:Activo,Finalizado,Cancelado',
+            'tecnologias' => 'nullable|array',
+            'tecnologias.*' => 'string',
             'jueces' => 'nullable|array',
             'jueces.*' => 'exists:juez,Id'
         ]);
@@ -168,10 +180,14 @@ class AdminEventoController extends Controller
             $evento->update([
                 'Nombre' => $request->nombre,
                 'Descripcion' => $request->descripcion,
-                'Fecha_inicio' => $request->fecha_inicio,
-                'Fecha_fin' => $request->fecha_fin,
+                'Categoria' => $request->dificultad,
+                'Fecha_inicio' => $request->fecha_inicio . ($request->hora_inicio ? ' ' . $request->hora_inicio : ' 00:00:00'),
+                'Fecha_fin' => $request->fecha_fin . ($request->hora_fin ? ' ' . $request->hora_fin : ' 23:59:59'),
+                'hora_inicio' => $request->hora_inicio,
+                'hora_fin' => $request->hora_fin,
                 'Ubicacion' => $request->ubicacion,
                 'Estado' => $request->estado ?? 'Activo',
+                'tecnologias' => $request->tecnologias ?? [],
             ]);
 
             DB::table('evento_juez')->where('Evento_id', $evento->Id)->delete();
@@ -190,7 +206,7 @@ class AdminEventoController extends Controller
             DB::commit();
 
             return redirect()->route('admin.eventos.index')
-                ->with('success', 'Evento actualizado exitosamente');
+                ->with('success', '✅ Evento "' . $evento->Nombre . '" actualizado exitosamente con todos los cambios guardados');
 
         } catch (\Exception $e) {
             DB::rollBack();

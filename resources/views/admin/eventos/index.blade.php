@@ -117,15 +117,21 @@
                     <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $evento->Nombre }}</h3>
                     <p class="text-gray-600 text-sm mb-4">{{ Str::limit($evento->Descripcion, 80) }}</p>
 
-                    <!-- Fechas -->
-                    <div class="flex items-center gap-4 mb-4 text-sm text-gray-600">
-                        <div class="flex items-center gap-1">
+                    <!-- Fechas y Horas -->
+                    <div class="space-y-2 mb-4 text-sm text-gray-600">
+                        <div class="flex items-center gap-2">
                             <span>📅</span>
-                            <span>{{ \Carbon\Carbon::parse($evento->Fecha_inicio)->format('d \d\e F \d\e Y') }}</span>
+                            <span>Inicio: {{ \Carbon\Carbon::parse($evento->Fecha_inicio)->format('d/m/Y') }}</span>
+                            @if($evento->hora_inicio)
+                                <span class="text-purple-600 font-medium">{{ $evento->hora_inicio }}</span>
+                            @endif
                         </div>
-                        <div class="flex items-center gap-1">
+                        <div class="flex items-center gap-2">
                             <span>⏰</span>
-                            <span>{{ \Carbon\Carbon::parse($evento->Fecha_fin)->format('d \d\e F \d\e Y') }}</span>
+                            <span>Fin: {{ \Carbon\Carbon::parse($evento->Fecha_fin)->format('d/m/Y') }}</span>
+                            @if($evento->hora_fin)
+                                <span class="text-purple-600 font-medium">{{ $evento->hora_fin }}</span>
+                            @endif
                         </div>
                     </div>
 
@@ -135,18 +141,25 @@
                             <span>👥</span>
                             <span>{{ $evento->cantidadEquipos }} equipos</span>
                         </div>
-                        <span class="text-orange-500 text-sm font-medium">intermedio</span>
+                        @if($evento->Categoria)
+                            <span class="text-orange-500 text-sm font-medium">{{ $evento->Categoria }}</span>
+                        @endif
                     </div>
 
                     <!-- Tecnologías -->
+                    @if($evento->tecnologias && count($evento->tecnologias) > 0)
                     <div class="mb-4">
                         <p class="text-xs text-gray-500 mb-2">Tecnologías</p>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">Solidity</span>
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">React</span>
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">Web3.js</span>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(array_slice($evento->tecnologias, 0, 4) as $tech)
+                                <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">{{ $tech }}</span>
+                            @endforeach
+                            @if(count($evento->tecnologias) > 4)
+                                <span class="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded-full font-medium">+{{ count($evento->tecnologias) - 4 }}</span>
+                            @endif
                         </div>
                     </div>
+                    @endif
 
                     <!-- Botones de acción -->
                     <div class="space-y-2">
@@ -285,13 +298,24 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Hora de inicio</label>
-                    <input 
-                        type="time" 
-                        name="hora_inicio"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    >
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora de inicio</label>
+                        <input 
+                            type="time" 
+                            name="hora_inicio"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora de fin</label>
+                        <input 
+                            type="time" 
+                            name="hora_fin"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                    </div>
                 </div>
 
                 <div>
@@ -306,22 +330,56 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tecnologías requeridas</label>
-                    <select 
-                        name="tecnologias[]"
-                        multiple 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        size="4"
-                    >
-                        <option value="React">React</option>
-                        <option value="Vue.js">Vue.js</option>
-                        <option value="Angular">Angular</option>
-                        <option value="Node.js">Node.js</option>
-                        <option value="Python">Python</option>
-                        <option value="Java">Java</option>
-                        <option value="Solidity">Solidity</option>
-                        <option value="Web3.js">Web3.js</option>
-                    </select>
-                    <p class="text-xs text-gray-500 mt-2">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples</p>
+                    <div class="grid grid-cols-2 gap-2 p-4 border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="React" class="rounded">
+                            <span class="text-sm">React</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Vue.js" class="rounded">
+                            <span class="text-sm">Vue.js</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Angular" class="rounded">
+                            <span class="text-sm">Angular</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Node.js" class="rounded">
+                            <span class="text-sm">Node.js</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Python" class="rounded">
+                            <span class="text-sm">Python</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Java" class="rounded">
+                            <span class="text-sm">Java</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Laravel" class="rounded">
+                            <span class="text-sm">Laravel</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Solidity" class="rounded">
+                            <span class="text-sm">Solidity</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Web3.js" class="rounded">
+                            <span class="text-sm">Web3.js</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="MySQL" class="rounded">
+                            <span class="text-sm">MySQL</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="MongoDB" class="rounded">
+                            <span class="text-sm">MongoDB</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                            <input type="checkbox" name="tecnologias[]" value="Docker" class="rounded">
+                            <span class="text-sm">Docker</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div>
