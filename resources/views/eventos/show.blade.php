@@ -131,6 +131,96 @@
                     </div>
                 </div>
 
+                <!-- 🏆 RANKING DEL EVENTO (solo si está finalizado) -->
+                @if(($evento->estado === 'finalizado' || $evento->Estado === 'Finalizado') && $proyectosRanking->count() > 0)
+                    <div class="mb-8 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border-2 border-yellow-300 p-8">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                                <span class="text-3xl">🏆</span>
+                                <span>Ranking Final</span>
+                            </h2>
+                            <p class="text-gray-600">Equipos clasificados por puntuación</p>
+                        </div>
+
+                        <!-- Podio (Top 3) -->
+                        @if($proyectosRanking->count() >= 3)
+                            <div class="grid grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
+                                <!-- 2do Lugar -->
+                                <div class="flex flex-col items-center justify-end">
+                                    <div class="bg-gradient-to-br from-gray-300 to-gray-400 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mb-2 shadow-lg">
+                                        2°
+                                    </div>
+                                    <div class="bg-white rounded-xl p-4 w-full text-center shadow-md border-2 border-gray-300">
+                                        <p class="font-bold text-gray-900 text-sm mb-1">{{ $proyectosRanking[1]->equipo->Nombre }}</p>
+                                        <p class="text-xs text-gray-600 mb-2">{{ $proyectosRanking[1]->Nombre }}</p>
+                                        <p class="text-lg font-bold text-gray-700">{{ number_format($proyectosRanking[1]->ranking_puntuacion, 1) }}</p>
+                                        <p class="text-xs text-gray-500">puntos</p>
+                                    </div>
+                                </div>
+
+                                <!-- 1er Lugar -->
+                                <div class="flex flex-col items-center justify-end -mt-8">
+                                    <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl font-bold mb-2 shadow-xl ring-4 ring-yellow-200">
+                                        1°
+                                    </div>
+                                    <div class="bg-white rounded-xl p-5 w-full text-center shadow-xl border-2 border-yellow-400">
+                                        <p class="font-bold text-gray-900 mb-1">{{ $proyectosRanking[0]->equipo->Nombre }}</p>
+                                        <p class="text-xs text-gray-600 mb-2">{{ $proyectosRanking[0]->Nombre }}</p>
+                                        <p class="text-2xl font-bold text-yellow-600">{{ number_format($proyectosRanking[0]->ranking_puntuacion, 1) }}</p>
+                                        <p class="text-xs text-gray-500">puntos</p>
+                                    </div>
+                                </div>
+
+                                <!-- 3er Lugar -->
+                                <div class="flex flex-col items-center justify-end">
+                                    <div class="bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mb-2 shadow-lg">
+                                        3°
+                                    </div>
+                                    <div class="bg-white rounded-xl p-4 w-full text-center shadow-md border-2 border-orange-300">
+                                        <p class="font-bold text-gray-900 text-sm mb-1">{{ $proyectosRanking[2]->equipo->Nombre }}</p>
+                                        <p class="text-xs text-gray-600 mb-2">{{ $proyectosRanking[2]->Nombre }}</p>
+                                        <p class="text-lg font-bold text-orange-700">{{ number_format($proyectosRanking[2]->ranking_puntuacion, 1) }}</p>
+                                        <p class="text-xs text-gray-500">puntos</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Lista completa de rankings -->
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                            <div class="bg-gray-900 text-white px-6 py-3">
+                                <h3 class="font-bold">Clasificación Completa</h3>
+                            </div>
+                            <div class="divide-y divide-gray-200">
+                                @foreach($proyectosRanking as $index => $proyecto)
+                                    <div class="px-6 py-4 hover:bg-gray-50 transition {{ $index < 3 ? 'bg-yellow-50/30' : '' }}">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-4 flex-1">
+                                                <div class="flex items-center justify-center w-10 h-10 rounded-full font-bold text-lg
+                                                    {{ $index === 0 ? 'bg-yellow-100 text-yellow-700' : '' }}
+                                                    {{ $index === 1 ? 'bg-gray-100 text-gray-700' : '' }}
+                                                    {{ $index === 2 ? 'bg-orange-100 text-orange-700' : '' }}
+                                                    {{ $index > 2 ? 'bg-gray-50 text-gray-600' : '' }}
+                                                ">
+                                                    {{ $proyecto->ranking_posicion }}°
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-semibold text-gray-900">{{ $proyecto->equipo->Nombre }}</p>
+                                                    <p class="text-sm text-gray-600">{{ $proyecto->Nombre }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-xl font-bold text-purple-600">{{ number_format($proyecto->ranking_puntuacion, 1) }}</p>
+                                                <p class="text-xs text-gray-500">puntos</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Botón de inscripción -->
                 @if ($evento->estado !== 'finalizado')
                     <form action="{{ route('eventos.inscribirse', $evento->Id) }}" method="POST">

@@ -41,7 +41,23 @@ class CalificacionController extends Controller
             return back()->with('error', 'Solo los jueces pueden calificar proyectos.');
         }
 
+        // 🔒 VALIDAR QUE EL EVENTO ESTÉ FINALIZADO
         $proyecto = Proyecto::findOrFail($request->proyecto_id);
+        $evento = $proyecto->evento;
+
+        if (!$evento) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El proyecto no está asociado a ningún evento.'
+            ], 400);
+        }
+
+        if ($evento->Estado !== 'Finalizado') {
+            return response()->json([
+                'success' => false,
+                'message' => '⏳ No puedes calificar aún. Solo se pueden asignar calificaciones cuando el evento haya finalizado. Estado actual: ' . $evento->Estado
+            ], 403);
+        }
 
         // Verificar que el juez esté asignado al evento del proyecto
         $eventoId = $proyecto->Evento_id;

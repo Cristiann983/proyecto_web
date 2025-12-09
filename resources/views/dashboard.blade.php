@@ -285,6 +285,13 @@
                            class="block w-full py-2.5 bg-gray-900 text-white text-center rounded-lg hover:bg-gray-800 transition font-medium">
                             Gestionar
                         </a>
+                        @if($proyecto && $proyecto->evento)
+                            <a href="{{ route('equipos.constancia', $equipo->Id) }}" 
+                               class="block w-full py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center rounded-lg hover:from-purple-700 hover:to-blue-700 transition font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                                <span>📄</span>
+                                <span>Descargar Constancia</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
             @empty

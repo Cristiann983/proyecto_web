@@ -403,4 +403,64 @@ class EquipoController extends Controller
         return redirect()->route('dashboard')
             ->with('success', 'Has salido del equipo exitosamente.');
     }
+
+    /**
+     * Generar constancia de participación
+     */
+    public function generarConstancia($id)
+    {
+        $equipo = Equipo::with(['participantes', 'proyectos.evento', 'proyectos.calificaciones'])->findOrFail($id);
+        $user = Auth::user();
+        $participante = Participante::where('user_id', $user->id)->first();
+
+        if (!$participante) {
+            return back()->with('error', 'No tienes permisos para generar constancia.');
+        }
+
+        // Verificar si es miembro del equipo
+        $miembro = DB::table('participante_equipo')
+            ->where('Id_equipo', $equipo->Id)
+            ->where('Id_participante', $participante->Id)
+            ->first();
+
+        if (!$miembro) {
+            return back()->with('error', 'No eres miembro de este equipo.');
+        }
+
+        // Verificar que el equipo tenga proyecto en un evento
+        $proyecto = $equipo->proyectos()->with(['evento', 'calificaciones'])->first();
+        
+        if (!$proyecto || !$proyecto->evento) {
+            return back()->with('error', 'Este equipo no tiene un proyecto asociado a un evento.');
+        }
+
+        // 🔒 VALIDAR QUE EL EVENTO HAYA FINALIZADO
+        if ($proyecto->evento->Estado !== 'Finalizado') {
+            return back()->with('error', '⏳ La constancia solo estará disponible después de que el evento haya finalizado. Estado actual: ' . $proyecto->evento->Estado);
+        }
+
+        // 🔒 VALIDAR QUE TENGAN CALIFICACIONES
+        $calificaciones = $proyecto->calificaciones;
+        if ($calificaciones->isEmpty()) {
+            return back()->with('error', '📊 Aún no puedes descargar la constancia. Debes recibir al menos una calificación de los jueces primero.');
+        }
+
+        // Obtener el rol del participante
+        $perfil = Perfil::find($miembro->Id_perfil);
+
+        // Datos para el PDF
+        $datos = [
+            'participante' => $participante,
+            'equipo' => $equipo,
+            'proyecto' => $proyecto,
+            'evento' => $proyecto->evento,
+            'perfil' => $perfil,
+            'fecha_emision' => now(),
+            'codigo_verificacion' => strtoupper(substr(md5($equipo->Id . $participante->Id . $proyecto->evento->Id), 0, 10))
+        ];
+
+        $pdf = \PDF::loadView('equipos.pdf.constancia', $datos);
+        
+        return $pdf->download('Constancia_' . $proyecto->evento->Nombre . '_' . $participante->Nombre . '.pdf');
+    }
 }

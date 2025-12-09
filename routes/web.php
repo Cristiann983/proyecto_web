@@ -41,6 +41,7 @@ Route::middleware(['role:Participante'])->group(function () {
     Route::post('/equipos', [EquipoController::class, 'store'])->name('equipos.store');
     Route::get('/equipos/{id}', [EquipoController::class, 'show'])->name('equipos.show');
     Route::post('/equipos/{id}/salir', [EquipoController::class, 'leave'])->name('equipos.leave');
+    Route::get('/equipos/{id}/constancia', [EquipoController::class, 'generarConstancia'])->name('equipos.constancia');
     Route::post('/equipos/{id}/invitar', [EquipoController::class, 'invite'])->name('equipos.invite');
 
     Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');

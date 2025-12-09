@@ -135,8 +135,19 @@ class EventoController extends Controller
             
             $estaInscrito = $proyectos->isNotEmpty();
         }
+
+        // 🏆 Cargar proyectos del evento con ranking
+        $proyectosRanking = collect();
+        // Verificar si el evento está finalizado (por fecha O por estado en BD)
+        if ($evento->estado === 'finalizado' || $evento->Estado === 'Finalizado') {
+            $proyectosRanking = Proyecto::where('Evento_id', $evento->Id)
+                ->with(['equipo'])
+                ->whereNotNull('ranking_posicion')
+                ->orderBy('ranking_posicion', 'asc')
+                ->get();
+        }
         
-        return view('eventos.show', compact('evento', 'estaInscrito', 'proyectos', 'participante'));
+        return view('eventos.show', compact('evento', 'estaInscrito', 'proyectos', 'participante', 'proyectosRanking'));
     }
 
     public function inscripcion($id)
