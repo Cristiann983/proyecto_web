@@ -77,14 +77,14 @@
                                             <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
                                                 <div class="flex items-center gap-2 flex-1 min-w-0">
                                                     @if(in_array($archivo['tipo'], ['jpg', 'jpeg', 'png', 'gif']))
-                                                        <img src="{{ asset('storage/' . $archivo['ruta']) }}" class="w-8 h-8 object-cover rounded">
+                                                        <img src="{{ route('repositorios.verArchivo', [$repo->Id, $index]) }}" class="w-8 h-8 object-cover rounded">
                                                     @else
                                                         <span class="text-xl">📄</span>
                                                     @endif
                                                     <span class="text-xs text-gray-700 truncate">{{ $archivo['nombre'] }}</span>
                                                 </div>
                                                 <div class="flex gap-1">
-                                                    <a href="{{ asset('storage/' . $archivo['ruta']) }}" target="_blank" class="text-purple-600 hover:text-purple-700 text-xs px-2 py-1">
+                                                    <a href="{{ route('repositorios.verArchivo', [$repo->Id, $index]) }}" target="_blank" class="text-purple-600 hover:text-purple-700 text-xs px-2 py-1">
                                                         Ver
                                                     </a>
                                                     <form action="{{ route('repositorios.eliminarArchivo', [$repo->Id, $index]) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar archivo?')">

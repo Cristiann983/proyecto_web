@@ -223,4 +223,40 @@ class RepositorioController extends Controller
             return back()->with('error', 'Error al eliminar archivo: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Ver/Descargar archivo del repositorio (solución para producción)
+     */
+    public function verArchivo($id, $index)
+    {
+        $repositorio = Repositorio::findOrFail($id);
+        $user = Auth::user();
+        $participante = Participante::where('user_id', $user->id)->first();
+
+        // Verificar acceso
+        $proyecto = $repositorio->proyecto;
+        $perteneceAlEquipo = DB::table('participante_equipo')
+            ->where('Id_participante', $participante->Id)
+            ->where('Id_equipo', $proyecto->Equipo_id)
+            ->exists();
+
+        if (!$perteneceAlEquipo) {
+            abort(403, 'No tienes permisos para ver este archivo.');
+        }
+
+        $archivos = $repositorio->archivos ?? [];
+        
+        if (!isset($archivos[$index])) {
+            abort(404, 'Archivo no encontrado.');
+        }
+
+        $rutaArchivo = $archivos[$index]['ruta'];
+        
+        if (!\Storage::disk('public')->exists($rutaArchivo)) {
+            abort(404, 'El archivo no existe en el servidor.');
+        }
+
+        // Retornar el archivo para visualización
+        return response()->file(storage_path('app/public/' . $rutaArchivo));
+    }
 }
