@@ -63,13 +63,13 @@ class AdminUsuarioController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'rol_id' => 'required|exists:rol,Id',
-            'is_active' => 'boolean',
+            // is_active no necesita validación - se maneja con has()
             // Campos específicos para participante
-            'no_control' => 'required_if:rol_id,1|nullable|string|max:50',
-            'carrera_id' => 'required_if:rol_id,1|nullable|exists:carrera,Id',
+            'no_control' => 'nullable|string|max:50',
+            'carrera_id' => 'nullable|exists:carrera,Id',
             'telefono' => 'nullable|string|max:20',
             // Campos específicos para juez
-            'especialidad_id' => 'required_if:rol_id,2|nullable|exists:especialidad,Id',
+            'especialidad_id' => 'nullable|exists:especialidad,Id',
         ], [
             'nombre.required' => 'El nombre es obligatorio',
             'email.required' => 'El correo electrónico es obligatorio',
@@ -80,9 +80,6 @@ class AdminUsuarioController extends Controller
             'password.confirmed' => 'Las contraseñas no coinciden',
             'rol_id.required' => 'Debes seleccionar un rol',
             'rol_id.exists' => 'El rol seleccionado no es válido',
-            'no_control.required_if' => 'El número de control es obligatorio para participantes',
-            'carrera_id.required_if' => 'La carrera es obligatoria para participantes',
-            'especialidad_id.required_if' => 'La especialidad es obligatoria para jueces',
         ]);
 
         DB::beginTransaction();
@@ -196,13 +193,13 @@ class AdminUsuarioController extends Controller
             'email' => 'required|email|unique:users,email,' . $usuario->id,
             'password' => 'nullable|string|min:8|confirmed',
             'rol_id' => 'required|exists:rol,Id',
-            'is_active' => 'boolean',
+            // is_active no necesita validación - se maneja con has()
             // Campos específicos para participante
-            'no_control' => 'required_if:rol_id,1|nullable|string|max:50',
-            'carrera_id' => 'required_if:rol_id,1|nullable|exists:carrera,Id',
+            'no_control' => 'nullable|string|max:50',
+            'carrera_id' => 'nullable|exists:carrera,Id',
             'telefono' => 'nullable|string|max:20',
             // Campos específicos para juez
-            'especialidad_id' => 'required_if:rol_id,2|nullable|exists:especialidad,Id',
+            'especialidad_id' => 'nullable|exists:especialidad,Id',
         ], [
             'nombre.required' => 'El nombre es obligatorio',
             'email.required' => 'El correo electrónico es obligatorio',

@@ -286,14 +286,13 @@
                             type="password"
                             id="password"
                             name="password"
-                            required
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent @error('password') border-red-500 @enderror"
                             placeholder="Mínimo 8 caracteres"
                         >
                         @error('password')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-1 text-xs text-gray-500">La contraseña debe tener al menos 8 caracteres</p>
+                        <p class="mt-1 text-xs text-gray-500">Deja en blanco para mantener la contraseña actual</p>
                     </div>
 
                     <!-- Confirmar contraseña -->
@@ -305,7 +304,6 @@
                             type="password"
                             id="password_confirmation"
                             name="password_confirmation"
-                            required
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="Repite la contraseña"
                         >
