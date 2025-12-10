@@ -198,20 +198,24 @@
                     
                     foreach($proyectos as $proyecto) {
                         foreach($proyecto->calificaciones as $cal) {
-                            // Evitar duplicados
+                            // Evitar duplicados por ID
                             if (in_array($cal->Id, $idsUsados)) continue;
                             $idsUsados[] = $cal->Id;
                             
-                            // Agregar información del proyecto/evento
-                            $cal->proyecto_nombre = $proyecto->Nombre;
+                            // Obtener evento_id del proyecto
+                            $eventoId = $proyecto->evento ? $proyecto->evento->Id : 0;
+                            
+                            // Crear clave única: evento_id + juez_id
+                            $cal->evento_juez_key = $eventoId . '_' . $cal->Juez_id;
+                            $cal->evento_id = $eventoId;
                             $cal->evento_nombre = $proyecto->evento ? $proyecto->evento->Nombre : 'Sin evento';
-                            $cal->proyecto_id = $proyecto->Id;
                             $cal->criterio_nombre = $cal->criterio ? $cal->criterio->Nombre : 'Criterio';
                             $todasCalificaciones->push($cal);
                         }
                     }
-                    // Agrupar por proyecto/evento primero, luego por juez
-                    $porProyecto = $todasCalificaciones->groupBy('proyecto_id');
+                    
+                    // Agrupar por combinación única de evento + juez
+                    $porEventoJuez = $todasCalificaciones->groupBy('evento_juez_key');
                 @endphp
 
                 @if($todasCalificaciones->count() > 0)
@@ -248,83 +252,71 @@
                             </div>
                         </div>
 
-                        <!-- Calificaciones por evento/proyecto -->
-                        @foreach($porProyecto as $proyectoId => $calificacionesProyecto)
-                            @php
-                                $nombreEvento = $calificacionesProyecto->first()->evento_nombre;
-                                $nombreProyecto = $calificacionesProyecto->first()->proyecto_nombre;
-                                $juecesDelProyecto = $calificacionesProyecto->groupBy('Juez_id');
-                            @endphp
+                        <!-- Cards de calificaciones: una por cada combinación evento+juez -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            @foreach($porEventoJuez as $key => $calificacionesGrupo)
+                                @php
+                                    $juez = $calificacionesGrupo->first()->juez;
+                                    $eventoNombre = $calificacionesGrupo->first()->evento_nombre;
+                                    $totalPuntos = $calificacionesGrupo->sum('Calificacion');
+                                    $maxPuntos = $calificacionesGrupo->count() * 10;
+                                    $promedio = $calificacionesGrupo->avg('Calificacion');
+                                @endphp
 
-                            <!-- Header del evento -->
-                            <div class="mb-4">
-                                <div class="flex items-center gap-2 mb-3">
-                                    <span class="text-lg">📅</span>
-                                    <h3 class="text-lg font-bold text-gray-900">{{ $nombreEvento }}</h3>
-                                    <span class="text-sm text-gray-500">- {{ $nombreProyecto }}</span>
-                                </div>
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-purple-300 transition">
+                                    <!-- Badge del evento -->
+                                    <div class="mb-3">
+                                        <span class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                                            <span>📅</span>
+                                            <span>{{ $eventoNombre }}</span>
+                                        </span>
+                                    </div>
 
-                                <div class="grid md:grid-cols-2 gap-4">
-                                    @foreach($juecesDelProyecto as $juezId => $calificacionesJuez)
-                                        @php
-                                            $juez = $calificacionesJuez->first()->juez;
-                                            $totalPuntos = $calificacionesJuez->sum('Calificacion');
-                                            $maxPuntos = $calificacionesJuez->count() * 10;
-                                            $promedio = $calificacionesJuez->avg('Calificacion');
-                                        @endphp
-
-                                        <div class="bg-white border-2 border-gray-200 rounded-xl p-5 hover:border-purple-300 transition">
-                                            <!-- Header del juez -->
-                                            <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
-                                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                                                    <span class="text-white font-bold text-lg">
-                                                        {{ substr($juez->Nombre, 0, 1) }}
-                                                    </span>
-                                                </div>
-                                                <div class="flex-1">
-                                                    <p class="font-semibold text-gray-900">{{ $juez->Nombre }}</p>
-                                                    <p class="text-sm text-gray-600">{{ $juez->especialidad->Nombre ?? 'Juez' }}</p>
-                                                </div>
-                                                <div class="text-right">
-                                                    <p class="text-2xl font-bold text-purple-600">{{ number_format($promedio, 1) }}</p>
-                                                    <p class="text-xs text-gray-500">/10</p>
-                                                </div>
-                                            </div>
-
-                                            <!-- Criterios calificados -->
-                                            <div class="space-y-3">
-                                                @foreach($calificacionesJuez as $calificacion)
-                                                    <div>
-                                                        <div class="flex items-center justify-between mb-1">
-                                                            <span class="text-sm font-medium text-gray-700">{{ $calificacion->criterio_nombre }}</span>
-                                                            <span class="text-sm font-bold text-purple-600">{{ $calificacion->Calificacion }}/10</span>
-                                                        </div>
-                                                        <!-- Barra de progreso -->
-                                                        <div class="w-full bg-gray-200 rounded-full h-2">
-                                                            <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all"
-                                                                 style="width: {{ ($calificacion->Calificacion / 10) * 100 }}%">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-
-                                            <!-- Total del juez -->
-                                            <div class="mt-4 pt-4 border-t border-gray-200">
-                                                <div class="flex items-center justify-between">
-                                                    <span class="text-sm font-medium text-gray-700">Total</span>
-                                                    <span class="text-sm font-bold text-gray-900">{{ $totalPuntos }} / {{ $maxPuntos }} pts</span>
-                                                </div>
-                                            </div>
+                                    <!-- Header del juez -->
+                                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white font-bold text-lg">
+                                                {{ substr($juez->Nombre, 0, 1) }}
+                                            </span>
                                         </div>
-                                    @endforeach
-                                </div>
-                            </div>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-gray-900">{{ $juez->Nombre }}</p>
+                                            <p class="text-sm text-gray-600">{{ $juez->especialidad->Nombre ?? 'Juez' }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-2xl font-bold text-purple-600">{{ number_format($promedio, 1) }}</p>
+                                            <p class="text-xs text-gray-500">/10</p>
+                                        </div>
+                                    </div>
 
-                            @if(!$loop->last)
-                                <hr class="my-6 border-gray-200">
-                            @endif
-                        @endforeach
+                                    <!-- Criterios calificados -->
+                                    <div class="space-y-3">
+                                        @foreach($calificacionesGrupo as $calificacion)
+                                            <div>
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <span class="text-sm font-medium text-gray-700">{{ $calificacion->criterio_nombre }}</span>
+                                                    <span class="text-sm font-bold text-purple-600">{{ $calificacion->Calificacion }}/10</span>
+                                                </div>
+                                                <!-- Barra de progreso -->
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all"
+                                                         style="width: {{ ($calificacion->Calificacion / 10) * 100 }}%">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <!-- Total del juez -->
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm font-medium text-gray-700">Total</span>
+                                            <span class="text-sm font-bold text-gray-900">{{ $totalPuntos }} / {{ $maxPuntos }} pts</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 @elseif($proyectos->count() > 0)
                     <div class="mb-8">

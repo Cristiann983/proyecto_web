@@ -89,6 +89,22 @@ class CalificacionController extends Controller
         $guardadas = 0;
         $actualizadas = 0;
 
+        // ✅ VALIDAR QUE SE CALIFIQUEN TODOS LOS CRITERIOS DEL EVENTO
+        $criteriosEvento = Criterio::where('Evento_id', $eventoId)->pluck('Id')->toArray();
+        $criteriosEnviados = array_column($request->calificaciones, 'criterio_id');
+        
+        $criteriosFaltantes = array_diff($criteriosEvento, $criteriosEnviados);
+        
+        if (count($criteriosFaltantes) > 0) {
+            $nombresFaltantes = Criterio::whereIn('Id', $criteriosFaltantes)->pluck('Nombre')->toArray();
+            $mensaje = 'Debes calificar todos los criterios. Faltan: ' . implode(', ', $nombresFaltantes);
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $mensaje], 400);
+            }
+            return back()->with('error', $mensaje);
+        }
+
         foreach ($request->calificaciones as $calificacionData) {
             // Actualizar si ya existe o crear nueva
             $calificacion = Calificacion::updateOrCreate(

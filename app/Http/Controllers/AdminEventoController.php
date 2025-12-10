@@ -91,15 +91,20 @@ class AdminEventoController extends Controller
                 }
             }
 
-            // Crear criterios para el evento
+            // Crear criterios para el evento (evitar duplicados)
             if ($request->has('criterios') && is_array($request->criterios)) {
                 foreach ($request->criterios as $criterioData) {
                     if (!empty($criterioData['nombre'])) {
-                        Criterio::create([
-                            'Nombre' => $criterioData['nombre'],
-                            'Descripcion' => $criterioData['descripcion'] ?? '',
-                            'Evento_id' => $evento->Id,
-                        ]);
+                        // Usar firstOrCreate para evitar duplicados
+                        Criterio::firstOrCreate(
+                            [
+                                'Nombre' => $criterioData['nombre'],
+                                'Evento_id' => $evento->Id,
+                            ],
+                            [
+                                'Descripcion' => $criterioData['descripcion'] ?? '',
+                            ]
+                        );
                     }
                 }
             }

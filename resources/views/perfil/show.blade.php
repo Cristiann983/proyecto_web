@@ -29,7 +29,7 @@
                         }
                     @endphp
                     <a href="{{ $dashboardRoute }}" class="text-gray-600 hover:text-gray-900">
-                        Volver al Inicio
+                        Volver al Inicio 
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

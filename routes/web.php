@@ -23,6 +23,11 @@ Route::get('/', function () {
 Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
+// Rutas de verificación de email
+Route::get('/verify', [RegisterController::class, 'showVerifyForm'])->name('verify.show');
+Route::post('/verify', [RegisterController::class, 'verifyCode'])->name('verify.code');
+Route::post('/verify/resend', [RegisterController::class, 'resendCode'])->name('verify.resend');
+
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
