@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
             RolPermisoSeeder::class,
             AsesorSeeder::class,     
             UsuarioSeeder::class,
-            especialidadSeeder::class,
+            EspecialidadSeeder::class,
         ]);
     }
 }
