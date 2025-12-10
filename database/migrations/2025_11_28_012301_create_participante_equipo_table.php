@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('Id');
             $table->unsignedBigInteger('Id_participante'); 
             $table->unsignedBigInteger('Id_equipo');       
-            $table->unsignedBigInteger('Id_perfil')->nullable(); // ✅ Id_perfil (no Perfil_id)
+            $table->unsignedBigInteger('Id_perfil')->nullable(); 
             $table->timestamps();
             
             // Foreign keys

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('avance', function (Blueprint $table) {
             $table->id('Id');
-            $table->unsignedBigInteger('Proyecto_id'); // ✅ FK a proyecto
+            $table->unsignedBigInteger('Proyecto_id');
             $table->text('Descripcion');
             $table->integer('Porcentaje')->default(0);
             $table->date('Fecha');

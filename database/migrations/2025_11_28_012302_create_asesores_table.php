@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('Nombre');
             $table->string('Correo')->unique();
             $table->string('Telefono')->nullable();
-            $table->string('Especialidad')->nullable(); // ✅ Agregar esta columna
+            $table->string('Especialidad')->nullable();
             $table->timestamps();
         });
     }

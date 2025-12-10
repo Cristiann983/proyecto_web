@@ -102,8 +102,8 @@
                                 <span class="text-green-600">👥</span>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Participantes</p>
-                                <p class="font-semibold text-gray-900">0 / 100</p>
+                                <p class="text-sm text-gray-500">Equipos Inscritos</p>
+                                <p class="font-semibold text-gray-900">{{ $evento->proyectos->count() }}</p>
                             </div>
                         </div>
                     </div>
@@ -114,20 +114,148 @@
                                 <span class="text-orange-600">⚡</span>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Nivel</p>
-                                <p class="font-semibold text-gray-900">Intermedio</p>
+                                <p class="text-sm text-gray-500">Categoría</p>
+                                <p class="font-semibold text-gray-900">{{ $evento->Categoria ?? 'Sin categoría' }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Duración del evento -->
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gray-50 rounded-xl p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <span class="text-indigo-600">⏰</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Hora de inicio</p>
+                                <p class="font-semibold text-gray-900">{{ $evento->hora_inicio ? \Carbon\Carbon::parse($evento->hora_inicio)->format('h:i A') : \Carbon\Carbon::parse($evento->Fecha_inicio)->format('h:i A') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                                <span class="text-pink-600">⏱️</span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Duración estimada</p>
+                                @php
+                                    $inicio = \Carbon\Carbon::parse($evento->Fecha_inicio);
+                                    $fin = \Carbon\Carbon::parse($evento->Fecha_fin);
+                                    $diffHoras = number_format($inicio->diffInHours($fin), 0);
+                                    $diffDias = number_format($inicio->diffInDays($fin), 0);
+                                    
+                                    if ($diffDias >= 1) {
+                                        $duracion = $diffDias . ' día' . ($diffDias > 1 ? 's' : '');
+                                        $horasRestantes = $inicio->diffInHours($fin) % 24;
+                                        if ($horasRestantes > 0) {
+                                            $duracion .= ' y ' . number_format($horasRestantes, 0) . ' hora' . ($horasRestantes > 1 ? 's' : '');
+                                        }
+                                    } else {
+                                        $duracion = $diffHoras . ' hora' . ($diffHoras > 1 ? 's' : '');
+                                    }
+                                @endphp
+                                <p class="font-semibold text-gray-900">{{ $duracion }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contador de tiempo -->
+                @php
+                    $ahora = now();
+                    $eventoIniciado = $ahora >= $evento->Fecha_inicio;
+                    $eventoFinalizado = $ahora > $evento->Fecha_fin;
+                @endphp
+                
+                @if(!$eventoFinalizado)
+                    <div class="mb-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
+                        <div class="text-center">
+                            @if(!$eventoIniciado)
+                                <p class="text-sm text-indigo-600 font-medium mb-2">⏳ El evento comienza en:</p>
+                            @else
+                                <p class="text-sm text-green-600 font-medium mb-2">⏱️ Tiempo restante del evento:</p>
+                            @endif
+                            <div id="countdown" class="flex justify-center gap-4">
+                                <div class="bg-white rounded-lg p-3 shadow-sm min-w-[70px]">
+                                    <p id="dias" class="text-2xl font-bold text-gray-900">--</p>
+                                    <p class="text-xs text-gray-500">Días</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm min-w-[70px]">
+                                    <p id="horas" class="text-2xl font-bold text-gray-900">--</p>
+                                    <p class="text-xs text-gray-500">Horas</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm min-w-[70px]">
+                                    <p id="minutos" class="text-2xl font-bold text-gray-900">--</p>
+                                    <p class="text-xs text-gray-500">Minutos</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm min-w-[70px]">
+                                    <p id="segundos" class="text-2xl font-bold text-gray-900">--</p>
+                                    <p class="text-xs text-gray-500">Segundos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        (function() {
+                            const fechaInicio = new Date('{{ $evento->Fecha_inicio->toIso8601String() }}');
+                            const fechaFin = new Date('{{ $evento->Fecha_fin->toIso8601String() }}');
+                            const eventoIniciado = {{ $eventoIniciado ? 'true' : 'false' }};
+                            
+                            function actualizarContador() {
+                                const ahora = new Date();
+                                const objetivo = eventoIniciado ? fechaFin : fechaInicio;
+                                const diferencia = objetivo - ahora;
+                                
+                                if (diferencia <= 0) {
+                                    document.getElementById('dias').textContent = '00';
+                                    document.getElementById('horas').textContent = '00';
+                                    document.getElementById('minutos').textContent = '00';
+                                    document.getElementById('segundos').textContent = '00';
+                                    return;
+                                }
+                                
+                                const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+                                const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                                const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+                                
+                                document.getElementById('dias').textContent = dias.toString().padStart(2, '0');
+                                document.getElementById('horas').textContent = horas.toString().padStart(2, '0');
+                                document.getElementById('minutos').textContent = minutos.toString().padStart(2, '0');
+                                document.getElementById('segundos').textContent = segundos.toString().padStart(2, '0');
+                            }
+                            
+                            actualizarContador();
+                            setInterval(actualizarContador, 1000);
+                        })();
+                    </script>
+                @else
+                    <div class="mb-8 bg-gray-100 rounded-xl p-6 border border-gray-200">
+                        <div class="text-center flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                            </svg>
+                            <p class="text-gray-600 font-medium">Este evento ya ha finalizado</p>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Tecnologías -->
                 <div class="mb-8">
                     <h2 class="text-lg font-semibold text-gray-900 mb-3">Tecnologías</h2>
                     <div class="flex flex-wrap gap-2">
-                        <span class="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-full">Solidity</span>
-                        <span class="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-full">React</span>
-                        <span class="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-full">Web3.js</span>
+                        @if($evento->tecnologias && is_array($evento->tecnologias) && count($evento->tecnologias) > 0)
+                            @foreach($evento->tecnologias as $tecnologia)
+                                <span class="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-full">{{ $tecnologia }}</span>
+                            @endforeach
+                        @else
+                            <span class="text-gray-500 text-sm">No se han especificado tecnologías</span>
+                        @endif
                     </div>
                 </div>
 
@@ -158,7 +286,7 @@
                                 </div>
                                 <div>
                                     @if($tieneCalificaciones)
-                                        <a href="{{ route('equipos.constancia', $equipo->Id) }}" 
+                                        <a href="{{ route('equipos.constancia', [$equipo->Id, $evento->Id]) }}" 
                                            class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg shadow-sm transition">
                                             <span>📥</span>
                                             <span>Descargar Constancia</span>
@@ -266,25 +394,10 @@
                     </div>
                 @endif
 
-                <!-- Botón de inscripción -->
-                @if ($evento->estado !== 'finalizado')
-                    <form action="{{ route('eventos.inscribirse', $evento->Id) }}" method="POST">
-                        @csrf
-                        <button type="submit" 
-                                class="w-full py-4 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition font-medium text-lg">
-                            Unirme al evento
-                        </button>
-                    </form>
-                @else
-                    <div class="w-full py-4 bg-gray-200 text-gray-600 rounded-xl text-center font-medium text-lg">
-                        Este evento ha finalizado
-                    </div>
-                @endif
-
                 {{-- Botones de acción --}}
                 <div class="mt-8">
                     @if($estaInscrito)
-                        {{-- ✅ Ya está inscrito --}}
+                        {{-- Ya está inscrito --}}
                         <div class="bg-green-50 border-2 border-green-500 rounded-xl p-6 text-center">
                             <div class="flex items-center justify-center mb-4">
                                 <div class="bg-green-500 rounded-full p-4">
@@ -326,7 +439,7 @@
                             </div>
                         </div>
                     @else
-                        {{-- ✅ No está inscrito - mostrar botón --}}
+                        {{-- No está inscrito - mostrar botón --}}
                         <div class="flex gap-4">
                             <a href="{{ route('eventos.index') }}" 
                                class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition text-center">
@@ -344,5 +457,7 @@
             </div>
         </div>
     </div>
+
+    @include('partials._footer')
 </body>
 </html>

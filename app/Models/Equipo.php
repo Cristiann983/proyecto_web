@@ -17,7 +17,7 @@ class Equipo extends Model
     ];
 
     public $timestamps = false;
-    // ✅ Relación con participantes usando Id_equipo e Id_participante
+    //Relación con participantes usando Id_equipo e Id_participante
     public function participantes()
     {
         return $this->belongsToMany(Participante::class, 'participante_equipo', 'Id_equipo', 'Id_participante')

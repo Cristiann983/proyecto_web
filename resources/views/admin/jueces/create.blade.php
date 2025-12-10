@@ -76,22 +76,7 @@
         </div>
 
         <!-- Mensajes de error -->
-        @if (session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600">❌ {{ session('error') }}</p>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600 font-medium mb-2">❌ Por favor corrige los siguientes errores:</p>
-                <ul class="list-disc list-inside text-red-600 text-sm">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+        @include('partials._alerts')
 
         <!-- Formulario -->
         <form method="POST" action="{{ route('admin.jueces.store') }}" class="bg-white rounded-xl shadow-lg p-8">

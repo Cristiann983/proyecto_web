@@ -62,6 +62,10 @@
                 <span>👤</span>
                 <span>Usuarios</span>
             </a>
+            <a href="{{ route('admin.carreras.index') }}" class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-50 flex items-center gap-2">
+                <span>🎓</span>
+                <span>Carreras</span>
+            </a>
             <a href="{{ route('admin.reportes.index') }}" class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-50 flex items-center gap-2">
                 <span>📈</span>
                 <span>Reportes</span>
@@ -69,17 +73,7 @@
         </div>
 
         <!-- Mensajes -->
-        @if (session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-green-600">✅ {{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600">❌ {{ session('error') }}</p>
-            </div>
-        @endif
+        @include('partials._alerts')
 
         <!-- Estadísticas -->
         <div class="grid md:grid-cols-3 gap-6 mb-8">

@@ -24,17 +24,7 @@
         </div>
 
 
-        @if (session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-green-600">✅ {{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600">❌ {{ session('error') }}</p>
-            </div>
-        @endif
+        @include('partials._alerts')
 
         <!-- Grid de repositorios -->
         @if($repositorios->count() > 0)
@@ -68,6 +58,14 @@
                                 <p class="text-sm font-medium text-gray-900">{{ $repo->proyecto->Nombre }}</p>
                             </div>
 
+                            @php
+                                $evento = $repo->proyecto->evento;
+                                $eventoEnCurso = $evento && now() >= $evento->Fecha_inicio && now() <= $evento->Fecha_fin;
+                                $eventoNoIniciado = $evento && now() < $evento->Fecha_inicio;
+                                $eventoFinalizado = $evento && now() > $evento->Fecha_fin;
+                                $puedeModificarArchivos = $eventoEnCurso;
+                            @endphp
+
                             <!-- 📎 Archivos Subidos -->
                             @if($repo->archivos && count($repo->archivos) > 0)
                                 <div class="mb-4">
@@ -87,11 +85,13 @@
                                                     <a href="{{ route('repositorios.verArchivo', [$repo->Id, $index]) }}" target="_blank" class="text-purple-600 hover:text-purple-700 text-xs px-2 py-1">
                                                         Ver
                                                     </a>
-                                                    <form action="{{ route('repositorios.eliminarArchivo', [$repo->Id, $index]) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar archivo?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-red-600 hover:text-red-700 text-xs px-2 py-1">×</button>
-                                                    </form>
+                                                    @if($puedeModificarArchivos)
+                                                        <form action="{{ route('repositorios.eliminarArchivo', [$repo->Id, $index]) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar archivo?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="text-red-600 hover:text-red-700 text-xs px-2 py-1">×</button>
+                                                        </form>
+                                                    @endif
                                                 </div>
                                             </div>
                                         @endforeach
@@ -100,12 +100,42 @@
                             @endif
 
                             <!-- Botones -->
-                            <div class="flex gap-2 mb-2">
-                                <button onclick="openFileModal({{ $repo->Id }})" class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition flex items-center justify-center gap-1">
-                                    <span>📎</span>
-                                    <span>Subir Archivo</span>
-                                </button>
-                            </div>
+                            
+                            @if($eventoNoIniciado)
+                                <div class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p class="text-yellow-700 text-xs text-center">
+                                        ⏳ El evento inicia el {{ $evento->Fecha_inicio->format('d/m/Y H:i') }}
+                                    </p>
+                                </div>
+                                <div class="flex gap-2 mb-2">
+                                    <button disabled class="flex-1 py-2 bg-gray-400 text-white text-sm rounded-lg cursor-not-allowed flex items-center justify-center gap-1" title="El evento aún no ha comenzado">
+                                        <span>📎</span>
+                                        <span>Subir Archivo</span>
+                                    </button>
+                                </div>
+                            @elseif($eventoFinalizado)
+                                <div class="mb-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                                    <p class="text-gray-600 text-xs text-center flex items-center justify-center gap-1">
+                                        <svg class="w-4 h-4 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                                        </svg>
+                                        El evento finalizó el {{ $evento->Fecha_fin->format('d/m/Y H:i') }}
+                                    </p>
+                                </div>
+                                <div class="flex gap-2 mb-2">
+                                    <button disabled class="flex-1 py-2 bg-gray-400 text-white text-sm rounded-lg cursor-not-allowed flex items-center justify-center gap-1" title="El evento ya finalizó">
+                                        <span>📎</span>
+                                        <span>Subir Archivo</span>
+                                    </button>
+                                </div>
+                            @else
+                                <div class="flex gap-2 mb-2">
+                                    <button onclick="openFileModal({{ $repo->Id }})" class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition flex items-center justify-center gap-1">
+                                        <span>📎</span>
+                                        <span>Subir Archivo</span>
+                                    </button>
+                                </div>
+                            @endif
                             <div class="flex gap-2">
                                 <a href="{{ $repo->Url }}" target="_blank" class="flex-1 py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm rounded-lg text-center transition">
                                     Abrir
@@ -376,24 +406,6 @@
         });
     </script>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex items-center justify-between">
-                <div class="flex gap-8 text-sm text-gray-600">
-                    <a href="#" class="hover:text-gray-900">Acerca de</a>
-                    <a href="#" class="hover:text-gray-900">Acerca de</a>
-                    <a href="#" class="hover:text-gray-900">Acerca de</a>
-                </div>
-                <div class="flex items-center gap-2 text-purple-600">
-                    <div class="text-xl">&lt;/&gt;</div>
-                    <div>
-                        <p class="font-bold">DevTeams</p>
-                        <p class="text-xs">✨ Plataforma de Desarrollo</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
+    @include('partials._footer')
 </body>
 </html>

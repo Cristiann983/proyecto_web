@@ -44,7 +44,7 @@ class CalificacionController extends Controller
             return back()->with('error', 'Solo los jueces pueden calificar proyectos.');
         }
 
-        // 🔒 VALIDAR QUE EL EVENTO ESTÉ FINALIZADO
+        //VALIDAR QUE EL EVENTO ESTÉ FINALIZADO
         $proyecto = Proyecto::findOrFail($request->proyecto_id);
         $evento = $proyecto->evento;
 
@@ -89,11 +89,20 @@ class CalificacionController extends Controller
         $guardadas = 0;
         $actualizadas = 0;
 
-        // ✅ VALIDAR QUE SE CALIFIQUEN TODOS LOS CRITERIOS DEL EVENTO
+        //VALIDAR QUE SE CALIFIQUEN TODOS LOS CRITERIOS DEL EVENTO
         $criteriosEvento = Criterio::where('Evento_id', $eventoId)->pluck('Id')->toArray();
-        $criteriosEnviados = array_column($request->calificaciones, 'criterio_id');
+        $criteriosEnviados = array_map('intval', array_column($request->calificaciones, 'criterio_id'));
         
         $criteriosFaltantes = array_diff($criteriosEvento, $criteriosEnviados);
+        
+        // Debug: Log para identificar el problema
+        \Log::info('Calificación Debug', [
+            'evento_id' => $eventoId,
+            'proyecto_id' => $proyecto->Id,
+            'criterios_evento' => $criteriosEvento,
+            'criterios_enviados' => $criteriosEnviados,
+            'criterios_faltantes' => $criteriosFaltantes
+        ]);
         
         if (count($criteriosFaltantes) > 0) {
             $nombresFaltantes = Criterio::whereIn('Id', $criteriosFaltantes)->pluck('Nombre')->toArray();
@@ -134,7 +143,7 @@ class CalificacionController extends Controller
         $totalEsperado = count($request->calificaciones);
         $todasGuardadas = $totalCalificaciones >= $totalEsperado;
 
-        // ✅ ACTUALIZAR RANKING DEL EVENTO AUTOMÁTICAMENTE
+        //ACTUALIZAR RANKING DEL EVENTO AUTOMÁTICAMENTE
         try {
             $rankingService = app(RankingService::class);
             $rankingService->calcularRankingEvento($proyecto->Evento_id);

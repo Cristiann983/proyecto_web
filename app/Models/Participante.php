@@ -31,11 +31,11 @@ class Participante extends Model
         return $this->belongsTo(Carrera::class, 'Carrera_id', 'Id');
     }
 
-    // ✅ Actualizar withPivot para usar Id_perfil
+    // Actualizar withPivot para usar Id_perfil
     public function equipos()
     {
         return $this->belongsToMany(Equipo::class, 'participante_equipo', 'Id_participante', 'Id_equipo')
-                    ->withPivot('Id_perfil') // ✅ Cambiado de Perfil_id a Id_perfil
+                    ->withPivot('Id_perfil') 
                     ->withTimestamps();
     }
 }

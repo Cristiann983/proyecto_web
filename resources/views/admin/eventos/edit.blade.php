@@ -47,28 +47,7 @@
         </div>
 
         <!-- Mensajes -->
-        @if (session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-green-600">✅ {{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600">❌ {{ session('error') }}</p>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="font-semibold text-red-800 mb-2">❌ Por favor corrige los siguientes errores:</p>
-                <ul class="list-disc list-inside text-sm text-red-600">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+        @include('partials._alerts')
 
         <!-- Formulario -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
@@ -227,6 +206,71 @@
                     <p class="text-xs text-gray-500 mt-2">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples jueces</p>
                 </div>
 
+                <!-- Criterios de Evaluación -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Criterios de Evaluación</label>
+                    <div id="criterios-container" class="space-y-3 mb-3">
+                        @forelse($evento->criterios as $index => $criterio)
+                            <div class="criterio-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <input type="hidden" name="criterios[{{ $index }}][id]" value="{{ $criterio->Id }}">
+                                <div class="flex gap-2 mb-2">
+                                    <input 
+                                        type="text" 
+                                        name="criterios[{{ $index }}][nombre]"
+                                        value="{{ old('criterios.'.$index.'.nombre', $criterio->Nombre) }}"
+                                        placeholder="Nombre del criterio"
+                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    >
+                                    <button type="button" onclick="removerCriterio(this)" class="text-red-600 hover:text-red-700 px-2 py-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <textarea 
+                                    name="criterios[{{ $index }}][descripcion]"
+                                    placeholder="Descripción del criterio (opcional)"
+                                    rows="2"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                                >{{ old('criterios.'.$index.'.descripcion', $criterio->Descripcion) }}</textarea>
+                            </div>
+                        @empty
+                            <div class="criterio-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <div class="flex gap-2 mb-2">
+                                    <input 
+                                        type="text" 
+                                        name="criterios[0][nombre]"
+                                        placeholder="Nombre del criterio"
+                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    >
+                                    <button type="button" onclick="removerCriterio(this)" class="text-red-600 hover:text-red-700 px-2 py-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <textarea 
+                                    name="criterios[0][descripcion]"
+                                    placeholder="Descripción del criterio (opcional)"
+                                    rows="2"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                                ></textarea>
+                            </div>
+                        @endforelse
+                    </div>
+                    <button 
+                        type="button"
+                        onclick="agregarCriterio()"
+                        class="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-400 hover:text-purple-600 transition flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Agregar otro criterio
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2">Los criterios con calificaciones existentes no pueden ser eliminados.</p>
+                </div>
+
                 <!-- Botones de acción -->
                 <div class="flex gap-3 pt-6 border-t border-gray-200">
                     <a href="{{ route('admin.eventos.index') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-medium transition text-center">
@@ -239,11 +283,59 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        💾 Guardar Cambios
+                        Guardar Cambios
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <script>
+        let criterioCount = {{ $evento->criterios->count() > 0 ? $evento->criterios->count() : 1 }};
+
+        function agregarCriterio() {
+            const container = document.getElementById('criterios-container');
+            const nuevoItem = document.createElement('div');
+            nuevoItem.className = 'criterio-item bg-gray-50 p-4 rounded-lg border border-gray-200';
+            nuevoItem.innerHTML = `
+                <div class="flex gap-2 mb-2">
+                    <input 
+                        type="text" 
+                        name="criterios[${criterioCount}][nombre]"
+                        placeholder="Nombre del criterio"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                    <button type="button" onclick="removerCriterio(this)" class="text-red-600 hover:text-red-700 px-2 py-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+                <textarea 
+                    name="criterios[${criterioCount}][descripcion]"
+                    placeholder="Descripción del criterio (opcional)"
+                    rows="2"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                ></textarea>
+            `;
+            container.appendChild(nuevoItem);
+            criterioCount++;
+        }
+
+        function removerCriterio(button) {
+            const item = button.closest('.criterio-item');
+            const container = document.getElementById('criterios-container');
+            if (container.children.length > 1) {
+                item.remove();
+            } else {
+                // Si es el último, solo limpiar los campos
+                item.querySelector('input[type="text"]').value = '';
+                item.querySelector('textarea').value = '';
+                // Remover el hidden input del ID si existe
+                const hiddenInput = item.querySelector('input[type="hidden"]');
+                if (hiddenInput) hiddenInput.remove();
+            }
+        }
+    </script>
 </body>
 </html>

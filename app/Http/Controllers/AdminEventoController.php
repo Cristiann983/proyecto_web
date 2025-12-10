@@ -21,7 +21,13 @@ class AdminEventoController extends Controller
                 ->with('error', 'No tienes permisos para acceder a esta sección.');
         }
 
-        $eventos = Evento::with('jueces')->orderBy('Fecha_inicio', 'desc')->get();
+        $eventos = Evento::with(['jueces', 'proyectos'])->orderBy('Fecha_inicio', 'desc')->get();
+        
+        // Calcular cantidad de equipos para cada evento
+        foreach ($eventos as $evento) {
+            $evento->cantidadEquipos = $evento->proyectos->count();
+        }
+        
         $jueces = Juez::all();
         
         return view('admin.eventos.index', compact('eventos', 'jueces'));
@@ -174,7 +180,11 @@ class AdminEventoController extends Controller
             'tecnologias' => 'nullable|array',
             'tecnologias.*' => 'string',
             'jueces' => 'nullable|array',
-            'jueces.*' => 'exists:juez,Id'
+            'jueces.*' => 'exists:juez,Id',
+            'criterios' => 'nullable|array',
+            'criterios.*.id' => 'nullable|integer',
+            'criterios.*.nombre' => 'required_with:criterios|string|max:255',
+            'criterios.*.descripcion' => 'nullable|string|max:500',
         ]);
 
         DB::beginTransaction();
@@ -208,10 +218,51 @@ class AdminEventoController extends Controller
                 }
             }
 
+            // Manejar criterios de evaluación
+            $criteriosEnviados = [];
+            if ($request->has('criterios') && is_array($request->criterios)) {
+                foreach ($request->criterios as $criterioData) {
+                    if (!empty($criterioData['nombre'])) {
+                        if (!empty($criterioData['id'])) {
+                            // Actualizar criterio existente
+                            $criterio = Criterio::find($criterioData['id']);
+                            if ($criterio && $criterio->Evento_id == $evento->Id) {
+                                $criterio->update([
+                                    'Nombre' => $criterioData['nombre'],
+                                    'Descripcion' => $criterioData['descripcion'] ?? '',
+                                ]);
+                                $criteriosEnviados[] = $criterio->Id;
+                            }
+                        } else {
+                            // Crear nuevo criterio
+                            $criterio = Criterio::create([
+                                'Nombre' => $criterioData['nombre'],
+                                'Descripcion' => $criterioData['descripcion'] ?? '',
+                                'Evento_id' => $evento->Id,
+                            ]);
+                            $criteriosEnviados[] = $criterio->Id;
+                        }
+                    }
+                }
+            }
+
+            // Eliminar criterios que no fueron enviados (solo si no tienen calificaciones)
+            $criteriosAEliminar = Criterio::where('Evento_id', $evento->Id)
+                ->whereNotIn('Id', $criteriosEnviados)
+                ->get();
+            
+            foreach ($criteriosAEliminar as $criterio) {
+                // Verificar si el criterio tiene calificaciones
+                $tieneCalificaciones = $criterio->calificaciones()->exists();
+                if (!$tieneCalificaciones) {
+                    $criterio->delete();
+                }
+            }
+
             DB::commit();
 
             return redirect()->route('admin.eventos.index')
-                ->with('success', '✅ Evento "' . $evento->Nombre . '" actualizado exitosamente con todos los cambios guardados');
+                ->with('success', 'Evento "' . $evento->Nombre . '" actualizado exitosamente con todos los cambios guardados');
 
         } catch (\Exception $e) {
             DB::rollBack();

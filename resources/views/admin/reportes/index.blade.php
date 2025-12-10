@@ -58,6 +58,10 @@
                 <span>👤</span>
                 <span>Usuarios</span>
             </a>
+            <a href="{{ route('admin.carreras.index') }}" class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
+                <span>🎓</span>
+                <span>Carreras</span>
+            </a>
             <a href="{{ route('admin.reportes.index') }}" class="px-8 py-3 rounded-full bg-white text-gray-900 font-medium shadow-sm flex items-center gap-2">
                 <span>📊</span>
                 <span>Reportes</span>

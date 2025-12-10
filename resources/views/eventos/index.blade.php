@@ -22,17 +22,7 @@
         </div>
 
 
-        @if (session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-green-600">✅ {{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600">❌ {{ session('error') }}</p>
-            </div>
-        @endif
+        @include('partials._alerts')
 
         <!-- Separador de Mis Eventos Inscritos -->
         @php
@@ -310,5 +300,7 @@
             </div>
         @endif
     </div>
+
+    @include('partials._footer')
 </body>
 </html>

@@ -38,19 +38,19 @@ class Proyecto extends Model
         return $this->belongsTo(Asesor::class, 'Asesor_id', 'Id');
     }
 
-    // ✅ Un proyecto tiene muchas calificaciones
+    //Un proyecto tiene muchas calificaciones
     public function calificaciones()
     {
         return $this->hasMany(Calificacion::class, 'Proyecto_id', 'Id');
     }
 
-    // ✅ Un proyecto tiene muchos avances
+    //Un proyecto tiene muchos avances
     public function avances()
     {
         return $this->hasMany(Avance::class, 'Proyecto_id', 'Id');
     }
 
-    // ✅ Un proyecto tiene un repositorio
+    //Un proyecto tiene un repositorio
     public function repositorio()
     {
         return $this->hasOne(Repositorio::class, 'Proyecto_id', 'Id');

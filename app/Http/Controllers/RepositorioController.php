@@ -29,11 +29,11 @@ class RepositorioController extends Controller
             $query->select('Id_equipo')
                   ->from('participante_equipo')
                   ->where('Id_participante', $participante->Id);
-        })->get();
+        })->with('evento')->get();
 
-        // Obtener repositorios de esos proyectos
+        // Obtener repositorios de esos proyectos con el evento
         $repositorios = Repositorio::whereIn('Proyecto_id', $proyectos->pluck('Id'))
-            ->with('proyecto')
+            ->with(['proyecto.evento'])
             ->get();
 
         return view('codigos.index', compact('repositorios', 'proyectos'));
@@ -133,6 +133,23 @@ class RepositorioController extends Controller
             return response()->json(['success' => false, 'message' => 'No tienes permisos para subir archivos.'], 403);
         }
 
+        // Verificar que el evento ya haya comenzado
+        $evento = $proyecto->evento;
+        if ($evento && now() < $evento->Fecha_inicio) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No puedes subir archivos hasta que el evento haya comenzado. El evento inicia el ' . $evento->Fecha_inicio->format('d/m/Y H:i') . '.'
+            ], 403);
+        }
+
+        // Verificar que el evento no haya finalizado
+        if ($evento && now() > $evento->Fecha_fin) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No puedes subir archivos porque el evento ya ha finalizado.'
+            ], 403);
+        }
+
         // Validar archivo
         $request->validate([
             'archivo' => 'required|file|mimes:jpg,jpeg,png,gif,pdf|max:5120', // 5MB máximo
@@ -197,6 +214,17 @@ class RepositorioController extends Controller
 
         if (!$perteneceAlEquipo) {
             return back()->with('error', 'No tienes permisos para eliminar archivos.');
+        }
+
+        // Verificar que el evento ya haya comenzado
+        $evento = $proyecto->evento;
+        if ($evento && now() < $evento->Fecha_inicio) {
+            return back()->with('error', 'No puedes eliminar archivos hasta que el evento haya comenzado. El evento inicia el ' . $evento->Fecha_inicio->format('d/m/Y H:i') . '.');
+        }
+
+        // Verificar que el evento no haya finalizado
+        if ($evento && now() > $evento->Fecha_fin) {
+            return back()->with('error', 'No puedes eliminar archivos porque el evento ya ha finalizado.');
         }
 
         try {

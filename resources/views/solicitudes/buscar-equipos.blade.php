@@ -22,17 +22,7 @@
             </form>
         </div>
 
-        @if(session('success'))
-            <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 text-green-700">
-                ✓ {{ session('success') }}
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-                ✗ {{ session('error') }}
-            </div>
-        @endif
+        @include('partials._alerts')
 
         @if($equipos->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -196,5 +186,7 @@
             }
         });
     </script>
+
+    @include('partials._footer')
 </body>
 </html>

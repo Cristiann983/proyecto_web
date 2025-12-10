@@ -52,15 +52,31 @@
                 <div class="flex items-center gap-3 mb-4">
                     <span class="bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-1 rounded-full flex items-center gap-2">
                         <span>&lt;/&gt;</span>
-                        <span>hackathon</span>
+                        <span>{{ $evento->Categoria ?? 'hackathon' }}</span>
                     </span>
-                    <span class="bg-green-500/90 text-white text-sm px-4 py-1 rounded-full flex items-center gap-2">
+                    @php
+                        $ahora = now();
+                        $estadoEvento = 'proximo';
+                        $estadoColor = 'bg-blue-500/90';
+                        $estadoTexto = 'Próximo';
+                        
+                        if ($ahora > $evento->Fecha_fin) {
+                            $estadoEvento = 'finalizado';
+                            $estadoColor = 'bg-gray-500/90';
+                            $estadoTexto = 'Finalizado';
+                        } elseif ($ahora >= $evento->Fecha_inicio && $ahora <= $evento->Fecha_fin) {
+                            $estadoEvento = 'activo';
+                            $estadoColor = 'bg-green-500/90';
+                            $estadoTexto = 'Active';
+                        }
+                    @endphp
+                    <span class="{{ $estadoColor }} text-white text-sm px-4 py-1 rounded-full flex items-center gap-2">
                         <span>●</span>
-                        <span>Active</span>
+                        <span>{{ $estadoTexto }}</span>
                     </span>
                 </div>
-                <h2 class="text-3xl font-bold mb-3">Eventos y Retos</h2>
-                <p class="text-lg opacity-90">Desarrolla aplicaciones descentralizadas en 48 horas</p>
+                <h2 class="text-3xl font-bold mb-3">{{ $evento->Nombre }}</h2>
+                <p class="text-lg opacity-90">{{ Str::limit($evento->Descripcion, 80) }}</p>
             </div>
 
             <!-- Información detallada -->
@@ -76,8 +92,8 @@
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 font-medium">Fecha de inicio</p>
-                                <p class="text-lg font-bold text-gray-900">14 de diciembre</p>
-                                <p class="text-sm text-gray-600">de 2024</p>
+                                <p class="text-lg font-bold text-gray-900">{{ \Carbon\Carbon::parse($evento->Fecha_inicio)->format('d \d\e F') }}</p>
+                                <p class="text-sm text-gray-600">de {{ \Carbon\Carbon::parse($evento->Fecha_inicio)->format('Y') }}</p>
                             </div>
                         </div>
                     </div>
@@ -91,8 +107,8 @@
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 font-medium">Fecha de fin</p>
-                                <p class="text-lg font-bold text-gray-900">16 de diciembre</p>
-                                <p class="text-sm text-gray-600">de 2024</p>
+                                <p class="text-lg font-bold text-gray-900">{{ \Carbon\Carbon::parse($evento->Fecha_fin)->format('d \d\e F') }}</p>
+                                <p class="text-sm text-gray-600">de {{ \Carbon\Carbon::parse($evento->Fecha_fin)->format('Y') }}</p>
                             </div>
                         </div>
                     </div>
@@ -106,19 +122,19 @@
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 font-medium">Equipos</p>
-                                <p class="text-lg font-bold text-gray-900">0 / 100</p>
+                                <p class="text-lg font-bold text-gray-900">{{ $evento->proyectos->count() }}</p>
                                 <p class="text-sm text-gray-600">Inscritos</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Dificultad -->
+                <!-- Categoría -->
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Nivel de Dificultad</h3>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Categoría</h3>
                     <div class="flex items-center gap-2">
                         <span class="bg-orange-100 text-orange-600 px-4 py-2 rounded-lg font-medium">
-                            Intermedio
+                            {{ $evento->Categoria ?? 'Sin categoría' }}
                         </span>
                     </div>
                 </div>
@@ -127,9 +143,13 @@
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 mb-3">Tecnologías Requeridas</h3>
                     <div class="flex flex-wrap gap-2">
-                        <span class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium">Solidity</span>
-                        <span class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium">React</span>
-                        <span class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium">Web3.js</span>
+                        @if($evento->tecnologias && is_array($evento->tecnologias) && count($evento->tecnologias) > 0)
+                            @foreach($evento->tecnologias as $tecnologia)
+                                <span class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium">{{ $tecnologia }}</span>
+                            @endforeach
+                        @else
+                            <span class="text-gray-500 text-sm">No se han especificado tecnologías</span>
+                        @endif
                     </div>
                 </div>
 
@@ -138,7 +158,7 @@
                     <h3 class="text-sm font-semibold text-gray-700 mb-3">Descripción Completa</h3>
                     <div class="bg-gray-50 rounded-lg p-4">
                         <p class="text-gray-700 leading-relaxed">
-                            Desarrolla aplicaciones descentralizadas en 48 horas. Este evento está diseñado para desarrolladores que quieran explorar el mundo de blockchain y crear soluciones innovadoras utilizando tecnologías como Solidity, React y Web3.js.
+                            {{ $evento->Descripcion ?? 'Sin descripción disponible' }}
                         </p>
                     </div>
                 </div>
@@ -148,16 +168,115 @@
                     <div>
                         <h3 class="text-sm font-semibold text-gray-700 mb-3">Hora de inicio</h3>
                         <div class="bg-gray-50 rounded-lg p-4">
-                            <p class="text-gray-900 font-medium">09:00 AM</p>
+                            <p class="text-gray-900 font-medium">
+                                {{ $evento->hora_inicio ? \Carbon\Carbon::parse($evento->hora_inicio)->format('h:i A') : \Carbon\Carbon::parse($evento->Fecha_inicio)->format('h:i A') }}
+                            </p>
                         </div>
                     </div>
                     <div>
                         <h3 class="text-sm font-semibold text-gray-700 mb-3">Duración estimada</h3>
                         <div class="bg-gray-50 rounded-lg p-4">
-                            <p class="text-gray-900 font-medium">48 horas</p>
+                            @php
+                                $inicio = \Carbon\Carbon::parse($evento->Fecha_inicio);
+                                $fin = \Carbon\Carbon::parse($evento->Fecha_fin);
+                                $diffHoras = number_format($inicio->diffInHours($fin), 0);
+                                $diffDias = number_format($inicio->diffInDays($fin), 0);
+                                
+                                if ($diffDias >= 1) {
+                                    $duracion = $diffDias . ' día' . ($diffDias > 1 ? 's' : '');
+                                    $horasRestantes = $inicio->diffInHours($fin) % 24;
+                                    if ($horasRestantes > 0) {
+                                        $duracion .= ' y ' . number_format($horasRestantes, 0) . ' hora' . ($horasRestantes > 1 ? 's' : '');
+                                    }
+                                } else {
+                                    $duracion = $diffHoras . ' hora' . ($diffHoras > 1 ? 's' : '');
+                                }
+                            @endphp
+                            <p class="text-gray-900 font-medium">{{ $duracion }}</p>
                         </div>
                     </div>
                 </div>
+
+                <!-- Contador de tiempo -->
+                @php
+                    $ahora = now();
+                    $eventoIniciado = $ahora >= $evento->Fecha_inicio;
+                    $eventoFinalizado = $ahora > $evento->Fecha_fin;
+                @endphp
+                
+                @if(!$eventoFinalizado)
+                    <div class="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
+                        <div class="text-center">
+                            @if(!$eventoIniciado)
+                                <p class="text-sm text-indigo-600 font-medium mb-2">⏳ El evento comienza en:</p>
+                            @else
+                                <p class="text-sm text-green-600 font-medium mb-2">⏱️ Tiempo restante del evento:</p>
+                            @endif
+                            <div id="countdown-admin" class="flex justify-center gap-4">
+                                <div class="bg-white rounded-lg p-3 shadow-sm min-w-[70px]">
+                                    <p id="dias-admin" class="text-2xl font-bold text-gray-900">--</p>
+                                    <p class="text-xs text-gray-500">Días</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm min-w-[70px]">
+                                    <p id="horas-admin" class="text-2xl font-bold text-gray-900">--</p>
+                                    <p class="text-xs text-gray-500">Horas</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm min-w-[70px]">
+                                    <p id="minutos-admin" class="text-2xl font-bold text-gray-900">--</p>
+                                    <p class="text-xs text-gray-500">Minutos</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm min-w-[70px]">
+                                    <p id="segundos-admin" class="text-2xl font-bold text-gray-900">--</p>
+                                    <p class="text-xs text-gray-500">Segundos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        (function() {
+                            const fechaInicio = new Date('{{ $evento->Fecha_inicio->toIso8601String() }}');
+                            const fechaFin = new Date('{{ $evento->Fecha_fin->toIso8601String() }}');
+                            const eventoIniciado = {{ $eventoIniciado ? 'true' : 'false' }};
+                            
+                            function actualizarContadorAdmin() {
+                                const ahora = new Date();
+                                const objetivo = eventoIniciado ? fechaFin : fechaInicio;
+                                const diferencia = objetivo - ahora;
+                                
+                                if (diferencia <= 0) {
+                                    document.getElementById('dias-admin').textContent = '00';
+                                    document.getElementById('horas-admin').textContent = '00';
+                                    document.getElementById('minutos-admin').textContent = '00';
+                                    document.getElementById('segundos-admin').textContent = '00';
+                                    return;
+                                }
+                                
+                                const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+                                const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                                const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+                                
+                                document.getElementById('dias-admin').textContent = dias.toString().padStart(2, '0');
+                                document.getElementById('horas-admin').textContent = horas.toString().padStart(2, '0');
+                                document.getElementById('minutos-admin').textContent = minutos.toString().padStart(2, '0');
+                                document.getElementById('segundos-admin').textContent = segundos.toString().padStart(2, '0');
+                            }
+                            
+                            actualizarContadorAdmin();
+                            setInterval(actualizarContadorAdmin, 1000);
+                        })();
+                    </script>
+                @else
+                    <div class="mt-6 bg-gray-100 rounded-xl p-6 border border-gray-200">
+                        <div class="text-center flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                            </svg>
+                            <p class="text-gray-600 font-medium">Este evento ya ha finalizado</p>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Botones de acción -->
                 <div class="flex gap-3 pt-6 border-t border-gray-200">

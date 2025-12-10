@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('Asesor_id')->nullable();
             $table->string('Nombre', 255);
             $table->string('Categoria', 255);
-            $table->timestamps(); // ✅ Agregar timestamps
+            $table->timestamps();
             
             // Foreign keys
             $table->foreign('Equipo_id')->references('Id')->on('equipo')->onDelete('cascade');

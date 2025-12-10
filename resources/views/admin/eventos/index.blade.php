@@ -64,6 +64,11 @@
                 <span>👤</span>
                 <span>Usuarios</span>
             </a>
+            <a href="{{ route('admin.carreras.index') }}"
+               class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
+                <span>🎓</span>
+                <span>Carreras</span>
+            </a>
             <a href="{{ route('admin.reportes.index') }}"
                class="px-8 py-3 rounded-full text-gray-600 hover:bg-white flex items-center gap-2 transition">
                 <span>📈</span>
@@ -87,17 +92,7 @@
         </div>
 
         <!-- Mensajes -->
-        @if (session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-green-600">✅ {{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600">❌ {{ session('error') }}</p>
-            </div>
-        @endif
+        @include('partials._alerts')
 
         <!-- Grid de eventos -->
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -219,9 +214,16 @@
             </div>
 
             @if ($errors->any())
-                <div class="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p class="font-semibold text-red-800 mb-2">❌ Por favor corrige los siguientes errores:</p>
-                    <ul class="list-disc list-inside text-sm text-red-600">
+                <div class="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="flex-shrink-0 w-5 h-5 text-red-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <p class="font-semibold text-red-800">Por favor corrige los siguientes errores:</p>
+                    </div>
+                    <ul class="list-disc list-inside text-sm text-red-600 ml-8">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach

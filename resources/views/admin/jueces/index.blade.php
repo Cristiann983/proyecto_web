@@ -71,17 +71,7 @@
         @endif
 
         <!-- Mensajes -->
-        @if (session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-green-600">✅ {{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600">❌ {{ session('error') }}</p>
-            </div>
-        @endif
+        @include('partials._alerts')
 
         <!-- Contenido principal -->
         <div class="mb-6">
@@ -135,7 +125,9 @@
                             <span>{{ $eventoSeleccionado->equipos->count() }} equipos inscritos</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span>✅</span>
+                            <svg class="w-4 h-4 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                            </svg>
                             <span>{{ $criterios->count() }} criterios de evaluación</span>
                         </div>
                     </div>
@@ -164,7 +156,8 @@
                     <div class="space-y-4 mb-6">
                         @foreach($equiposPaginados as $equipo)
                             @php
-                                $proyecto = $equipo->proyectos->first();
+                                // Filtrar para obtener solo el proyecto del evento seleccionado
+                                $proyecto = $equipo->proyectos->where('Evento_id', $eventoSeleccionado->Id)->first();
                                 $lider = $equipo->participantes->where('pivot.Id_perfil', \App\Models\Perfil::where('Nombre', 'Líder')->first()->Id ?? 0)->first();
 
                                 // Obtener calificaciones existentes de este juez para este proyecto

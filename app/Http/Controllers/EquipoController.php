@@ -9,6 +9,7 @@ use App\Models\Equipo;
 use App\Models\Participante;
 use App\Models\Perfil;
 use App\Models\Invitacion;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EquipoController extends Controller
 {
@@ -21,7 +22,7 @@ class EquipoController extends Controller
             return view('equipos.index', ['equipos' => collect()]);
         }
 
-        // ✅ Obtener equipos del participante con sus miembros, proyectos y calificaciones
+        //Obtener equipos del participante con sus miembros, proyectos y calificaciones
         $equipos = Equipo::whereIn('Id', function($query) use ($participante) {
             $query->select('Id_equipo')
                   ->from('participante_equipo')
@@ -112,7 +113,7 @@ class EquipoController extends Controller
 
     public function show($id)
     {
-        // ✅ Cargar equipo con participantes, proyectos y calificaciones
+        //Cargar equipo con participantes, proyectos y calificaciones
         $equipo = Equipo::with([
             'participantes.usuario',
             'participantes.carrera',
@@ -407,68 +408,142 @@ class EquipoController extends Controller
     /**
      * Generar constancia de participación
      */
-    public function generarConstancia($id)
+    public function generarConstancia($id, $evento_id)
     {
-        $equipo = Equipo::with(['participantes', 'proyectos.evento', 'proyectos.calificaciones'])->findOrFail($id);
+        try {
+            \Log::info('Iniciando generación de constancia', ['equipo_id' => $id, 'evento_id' => $evento_id]);
+            
+            $equipo = Equipo::with(['participantes', 'proyectos.evento', 'proyectos.calificaciones'])->findOrFail($id);
+            $user = Auth::user();
+            $participante = Participante::where('user_id', $user->id)->first();
+
+            if (!$participante) {
+                return back()->with('error', 'No tienes permisos para generar constancia.');
+            }
+
+            // Verificar si es miembro del equipo
+            $miembro = DB::table('participante_equipo')
+                ->where('Id_equipo', $equipo->Id)
+                ->where('Id_participante', $participante->Id)
+                ->first();
+
+            if (!$miembro) {
+                return back()->with('error', 'No eres miembro de este equipo.');
+            }
+
+            // Verificar que el equipo tenga proyecto en el evento especificado
+            $proyecto = $equipo->proyectos()->with(['evento', 'calificaciones'])->where('Evento_id', $evento_id)->first();
+            
+            if (!$proyecto || !$proyecto->evento) {
+                return back()->with('error', 'Este equipo no tiene un proyecto asociado a este evento.');
+            }
+
+            \Log::info('Verificando evento', [
+                'evento_id' => $proyecto->evento->Id,
+                'fecha_fin' => $proyecto->evento->Fecha_fin,
+                'ahora' => now(),
+                'calificaciones_count' => $proyecto->calificaciones->count()
+            ]);
+
+            // 🔒 VALIDAR QUE EL EVENTO HAYA FINALIZADO (por fecha)
+            $ahora = now();
+            if ($ahora <= $proyecto->evento->Fecha_fin) {
+                $fechaFin = \Carbon\Carbon::parse($proyecto->evento->Fecha_fin)->format('d/m/Y H:i');
+                return back()->with('error', "La constancia solo estará disponible después de que el evento haya finalizado. El evento termina el: {$fechaFin}");
+            }
+
+            // 🔒 VALIDAR QUE TENGAN CALIFICACIONES
+            $calificaciones = $proyecto->calificaciones;
+            if ($calificaciones->isEmpty()) {
+                return back()->with('error', 'Aún no puedes descargar la constancia. Debes recibir al menos una calificación de los jueces primero.');
+            }
+
+            // Obtener el rol del participante
+            $perfil = Perfil::find($miembro->Id_perfil);
+
+            // Verificar si el equipo quedó en el top 3 del ranking
+            $posicionRanking = $proyecto->ranking_posicion;
+            $esGanador = $posicionRanking && $posicionRanking <= 3;
+
+            // Datos para el PDF
+            $datos = [
+                'participante' => $participante,
+                'equipo' => $equipo,
+                'proyecto' => $proyecto,
+                'evento' => $proyecto->evento,
+                'perfil' => $perfil,
+                'fecha_emision' => now(),
+                'codigo_verificacion' => strtoupper(substr(md5($equipo->Id . $participante->Id . $proyecto->evento->Id), 0, 10)),
+                'posicion_ranking' => $posicionRanking,
+                'es_ganador' => $esGanador
+            ];
+
+            \Log::info('Generando PDF con datos', ['datos_keys' => array_keys($datos)]);
+
+            $pdf = Pdf::loadView('equipos.pdf.constancia', $datos);
+            
+            \Log::info('PDF generado exitosamente');
+            
+            return $pdf->download('Constancia_' . $proyecto->evento->Nombre . '_' . $participante->Nombre . '.pdf');
+            
+        } catch (\Exception $e) {
+            \Log::error('Error generando constancia', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Error al generar la constancia: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Eliminar un miembro del equipo (solo el líder puede hacerlo)
+     */
+    public function removeMember($equipoId, $participanteId)
+    {
+        $equipo = Equipo::findOrFail($equipoId);
         $user = Auth::user();
-        $participante = Participante::where('user_id', $user->id)->first();
+        $participanteActual = Participante::where('user_id', $user->id)->first();
 
-        if (!$participante) {
-            return back()->with('error', 'No tienes permisos para generar constancia.');
+        if (!$participanteActual) {
+            return back()->with('error', 'No tienes permisos para realizar esta acción.');
         }
 
-        // Verificar si es miembro del equipo
-        $miembro = DB::table('participante_equipo')
+        // Verificar si el usuario actual es líder del equipo
+        $perfilLider = Perfil::where('Nombre', 'Líder')->first();
+        $esLider = DB::table('participante_equipo')
             ->where('Id_equipo', $equipo->Id)
-            ->where('Id_participante', $participante->Id)
-            ->first();
+            ->where('Id_participante', $participanteActual->Id)
+            ->where('Id_perfil', $perfilLider->Id)
+            ->exists();
 
-        if (!$miembro) {
-            return back()->with('error', 'No eres miembro de este equipo.');
+        if (!$esLider) {
+            return back()->with('error', 'Solo el líder puede eliminar miembros del equipo.');
         }
 
-        // Verificar que el equipo tenga proyecto en un evento
-        $proyecto = $equipo->proyectos()->with(['evento', 'calificaciones'])->first();
-        
-        if (!$proyecto || !$proyecto->evento) {
-            return back()->with('error', 'Este equipo no tiene un proyecto asociado a un evento.');
+        // Verificar que no intente eliminarse a sí mismo
+        if ($participanteActual->Id == $participanteId) {
+            return back()->with('error', 'No puedes eliminarte a ti mismo del equipo. Usa la opción "Salir del equipo".');
         }
 
-        // 🔒 VALIDAR QUE EL EVENTO HAYA FINALIZADO (por fecha)
-        $ahora = now();
-        if ($ahora <= $proyecto->evento->Fecha_fin) {
-            $fechaFin = \Carbon\Carbon::parse($proyecto->evento->Fecha_fin)->format('d/m/Y H:i');
-            return back()->with('error', "⏳ La constancia solo estará disponible después de que el evento haya finalizado. El evento termina el: {$fechaFin}");
+        // Verificar que el participante a eliminar es miembro del equipo
+        $esMiembro = DB::table('participante_equipo')
+            ->where('Id_equipo', $equipo->Id)
+            ->where('Id_participante', $participanteId)
+            ->exists();
+
+        if (!$esMiembro) {
+            return back()->with('error', 'El participante no es miembro de este equipo.');
         }
 
-        // 🔒 VALIDAR QUE TENGAN CALIFICACIONES
-        $calificaciones = $proyecto->calificaciones;
-        if ($calificaciones->isEmpty()) {
-            return back()->with('error', '📊 Aún no puedes descargar la constancia. Debes recibir al menos una calificación de los jueces primero.');
-        }
+        // Eliminar al miembro del equipo
+        DB::table('participante_equipo')
+            ->where('Id_equipo', $equipo->Id)
+            ->where('Id_participante', $participanteId)
+            ->delete();
 
-        // Obtener el rol del participante
-        $perfil = Perfil::find($miembro->Id_perfil);
+        $participanteEliminado = Participante::find($participanteId);
+        $nombreEliminado = $participanteEliminado ? $participanteEliminado->Nombre : 'El miembro';
 
-        // Verificar si el equipo quedó en el top 3 del ranking
-        $posicionRanking = $proyecto->ranking_posicion;
-        $esGanador = $posicionRanking && $posicionRanking <= 3;
-
-        // Datos para el PDF
-        $datos = [
-            'participante' => $participante,
-            'equipo' => $equipo,
-            'proyecto' => $proyecto,
-            'evento' => $proyecto->evento,
-            'perfil' => $perfil,
-            'fecha_emision' => now(),
-            'codigo_verificacion' => strtoupper(substr(md5($equipo->Id . $participante->Id . $proyecto->evento->Id), 0, 10)),
-            'posicion_ranking' => $posicionRanking,
-            'es_ganador' => $esGanador
-        ];
-
-        $pdf = \PDF::loadView('equipos.pdf.constancia', $datos);
-        
-        return $pdf->download('Constancia_' . $proyecto->evento->Nombre . '_' . $participante->Nombre . '.pdf');
+        return back()->with('success', "{$nombreEliminado} ha sido eliminado del equipo.");
     }
 }

@@ -38,28 +38,7 @@
         </a>
 
         <!-- Mensajes de éxito y error -->
-        @if (session('success'))
-            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-green-600">✅ {{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600">❌ {{ session('error') }}</p>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-red-600 font-medium mb-2">❌ Por favor corrige los siguientes errores:</p>
-                <ul class="list-disc list-inside text-red-600 text-sm">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+        @include('partials._alerts')
 
         <!-- Información del equipo -->
         <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-6">
@@ -158,6 +137,24 @@
                                         <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-full">
                                             Miembro
                                         </span>
+                                    @endif
+                                    
+                                    {{-- Botón para eliminar miembro (solo visible para el líder y no para sí mismo) --}}
+                                    @if($esLider && (!isset($participante->perfil) || $participante->perfil->Nombre !== 'Líder'))
+                                        <form action="{{ route('equipos.removeMember', ['equipoId' => $equipo->Id, 'participanteId' => $participante->Id]) }}" 
+                                              method="POST" 
+                                              class="inline"
+                                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ $participante->Nombre }} del equipo?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition"
+                                                    title="Eliminar del equipo">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
                                     @endif
                                 </div>
                             </div>
@@ -420,5 +417,7 @@
             }
         });
     </script>
+
+    @include('partials._footer')
 </body>
 </html>

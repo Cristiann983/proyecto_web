@@ -62,7 +62,7 @@ class Evento extends Model
         return $this->hasMany(Criterio::class, 'Evento_id', 'Id');
     }
 
-    // ✅ Determinar estado dinámicamente basado en fechas Y HORAS
+    //Determinar estado dinámicamente basado en fechas Y HORAS
     public function getEstadoLabelAttribute()
     {
         $ahora = now();

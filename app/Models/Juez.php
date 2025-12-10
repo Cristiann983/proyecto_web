@@ -13,7 +13,7 @@ class Juez extends Model
     protected $primaryKey = 'Id';
 
     protected $fillable = [
-        'user_id', // ✅ Agregar
+        'user_id', 
         'Id_especialidad',
         'Nombre',
         'Correo',

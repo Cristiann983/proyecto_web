@@ -14,6 +14,7 @@ use App\Http\Controllers\RepositorioController;
 use App\Http\Controllers\InvitacionController;
 use App\Http\Controllers\AdminJuezController;
 use App\Http\Controllers\SolicitudEquipoController;
+use App\Http\Controllers\AdminCarreraController;
 
 // Rutas públicas
 Route::get('/', function () {
@@ -46,8 +47,9 @@ Route::middleware(['role:Participante'])->group(function () {
     Route::post('/equipos', [EquipoController::class, 'store'])->name('equipos.store');
     Route::get('/equipos/{id}', [EquipoController::class, 'show'])->name('equipos.show');
     Route::post('/equipos/{id}/salir', [EquipoController::class, 'leave'])->name('equipos.leave');
-    Route::get('/equipos/{id}/constancia', [EquipoController::class, 'generarConstancia'])->name('equipos.constancia');
+    Route::get('/equipos/{id}/constancia/{evento_id}', [EquipoController::class, 'generarConstancia'])->name('equipos.constancia');
     Route::post('/equipos/{id}/invitar', [EquipoController::class, 'invite'])->name('equipos.invite');
+    Route::delete('/equipos/{equipoId}/miembro/{participanteId}', [EquipoController::class, 'removeMember'])->name('equipos.removeMember');
 
     Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');
     Route::get('/eventos/{id}', [EventoController::class, 'show'])->name('eventos.show');
@@ -129,5 +131,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/reportes/eventos', [App\Http\Controllers\ReporteController::class, 'eventos'])->name('reportes.eventos');
         Route::get('/reportes/equipos', [App\Http\Controllers\ReporteController::class, 'equipos'])->name('reportes.equipos');
         Route::get('/reportes/estadisticas', [App\Http\Controllers\ReporteController::class, 'estadisticas'])->name('reportes.estadisticas');
+
+        // Gestión de Carreras (solo para administradores)
+        Route::get('/carreras', [AdminCarreraController::class, 'index'])->name('carreras.index');
+        Route::post('/carreras', [AdminCarreraController::class, 'store'])->name('carreras.store');
+        Route::put('/carreras/{id}', [AdminCarreraController::class, 'update'])->name('carreras.update');
+        Route::delete('/carreras/{id}', [AdminCarreraController::class, 'destroy'])->name('carreras.destroy');
     });
 });

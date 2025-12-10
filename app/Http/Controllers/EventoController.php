@@ -19,7 +19,7 @@ class EventoController extends Controller
         $participante = Participante::where('user_id', $user->id)->first();
 
         // Obtener filtros de la petición
-        $filtro = $request->get('filtro', 'activos'); // activos, proximos, finalizados, todos
+        $filtro = $request->get('filtro', 'todos'); // activos, proximos, finalizados, todos
         $categoria = $request->get('categoria', 'todos');
         $buscar = $request->get('buscar', '');
 
@@ -76,7 +76,7 @@ class EventoController extends Controller
         // Obtener categorías únicas para el filtro
         $categorias = Evento::select('Categoria')->distinct()->pluck('Categoria');
 
-        // ✅ Verificar en qué eventos está inscrito el participante
+        //Verificar en qué eventos está inscrito el participante
         $eventosInscritos = [];
         if ($participante) {
             $eventosInscritos = DB::table('proyecto')
@@ -106,7 +106,7 @@ class EventoController extends Controller
 
     public function show($id)
     {
-        $evento = Evento::with('jueces')->findOrFail($id);
+        $evento = Evento::with(['jueces', 'proyectos'])->findOrFail($id);
         $user = Auth::user();
         
         // Determinar estado dinámicamente basado en fechas
@@ -136,7 +136,7 @@ class EventoController extends Controller
             $estaInscrito = $proyectos->isNotEmpty();
         }
 
-        // 🏆 Cargar proyectos del evento con ranking
+        //Cargar proyectos del evento con ranking
         $proyectosRanking = collect();
         // Verificar si el evento está finalizado (por fecha O por estado en BD)
         if ($evento->estado === 'finalizado' || $evento->Estado === 'Finalizado') {
@@ -252,7 +252,7 @@ class EventoController extends Controller
 
             DB::commit();
 
-            // ✅ Redirigir a la vista de eventos con mensaje de éxito
+            //Redirigir a la vista de eventos con mensaje de éxito
             return redirect()->route('eventos.index')
                 ->with('success', '¡Inscripción exitosa! Tu equipo "' . $proyecto->Nombre . '" ha sido inscrito al evento "' . Evento::find($id)->Nombre . '".');
 

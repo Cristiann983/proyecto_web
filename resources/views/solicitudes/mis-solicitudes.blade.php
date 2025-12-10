@@ -41,17 +41,7 @@
             <p class="text-gray-600">Revisa y gestiona las solicitudes de usuarios que desean unirse a tus equipos</p>
         </div>
 
-        @if(session('success'))
-            <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 text-green-700">
-                ✓ {{ session('success') }}
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-                ✗ {{ session('error') }}
-            </div>
-        @endif
+        @include('partials._alerts')
 
         @if($solicitudes->count() > 0)
             <div class="space-y-4">
@@ -129,5 +119,7 @@
             </div>
         @endif
     </div>
+
+    @include('partials._footer')
 </body>
 </html>
