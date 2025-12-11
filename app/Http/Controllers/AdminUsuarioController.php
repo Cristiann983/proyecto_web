@@ -197,7 +197,7 @@ class AdminUsuarioController extends Controller
             // Campos específicos para participante
             'no_control' => 'nullable|string|max:50',
             'carrera_id' => 'nullable|exists:carrera,Id',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'required|string|max:20',
             // Campos específicos para juez
             'especialidad_id' => 'nullable|exists:especialidad,Id',
         ], [
@@ -208,6 +208,7 @@ class AdminUsuarioController extends Controller
             'password.min' => 'La contraseña debe tener al menos 8 caracteres',
             'password.confirmed' => 'Las contraseñas no coinciden',
             'rol_id.required' => 'Debes seleccionar un rol',
+            'telefono.required' => 'El teléfono es obligatorio',
             'rol_id.exists' => 'El rol seleccionado no es válido',
         ]);
 
@@ -297,8 +298,8 @@ class AdminUsuarioController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.usuarios.show', $usuario->id)
-                ->with('success', '¡Usuario actualizado exitosamente!');
+            return redirect()->route('admin.usuarios.index')
+                ->with('success', 'Rol del usuario "' . $usuario->name . '" actualizado exitosamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -136,7 +136,7 @@
                     <!-- Teléfono -->
                     <div>
                         <label for="telefono" class="block text-sm font-medium text-gray-700 mb-2">
-                            Teléfono (Opcional)
+                            Teléfono <span class="text-red-500">*</span>
                         </label>
                         <input
                             type="tel"
@@ -145,7 +145,11 @@
                             value="{{ old('telefono', $usuario->participante->telefono ?? $usuario->juez->telefono ?? '') }}"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="+52 123 456 7890"
+                            required
                         >
+                        @error('telefono')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Rol -->

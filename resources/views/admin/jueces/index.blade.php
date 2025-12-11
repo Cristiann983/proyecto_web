@@ -103,14 +103,35 @@
             </div>
 
             @if($eventoSeleccionado)
+                {{-- Calcular estado del evento basado en fechas --}}
+                @php
+                    $ahora = now();
+                    $fechaInicio = \Carbon\Carbon::parse($eventoSeleccionado->Fecha_inicio);
+                    $fechaFin = \Carbon\Carbon::parse($eventoSeleccionado->Fecha_fin);
+                    
+                    if ($ahora < $fechaInicio) {
+                        $estadoEvento = 'proximo';
+                        $estadoTexto = 'Próximo';
+                        $estadoClase = 'bg-blue-500/90';
+                    } elseif ($ahora > $fechaFin) {
+                        $estadoEvento = 'finalizado';
+                        $estadoTexto = 'Finalizado';
+                        $estadoClase = 'bg-gray-500/90';
+                    } else {
+                        $estadoEvento = 'activo';
+                        $estadoTexto = 'En Curso';
+                        $estadoClase = 'bg-green-500/90';
+                    }
+                @endphp
+                
                 <!-- Información del evento seleccionado -->
                 <div class="bg-gradient-to-r from-purple-600 to-blue-500 rounded-2xl p-6 text-white mb-6">
                     <div class="flex items-center gap-3 mb-3">
                         <span class="bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-1 rounded-full">
                             &lt;/&gt; {{ strtolower($eventoSeleccionado->Categoria) }}
                         </span>
-                        <span class="bg-green-500/90 text-white text-sm px-4 py-1 rounded-full">
-                            ● Activo
+                        <span class="{{ $estadoClase }} text-white text-sm px-4 py-1 rounded-full">
+                            ● {{ $estadoTexto }}
                         </span>
                     </div>
                     <h3 class="text-2xl font-bold mb-2">{{ $eventoSeleccionado->Nombre }}</h3>
